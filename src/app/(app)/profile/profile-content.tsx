@@ -19,13 +19,13 @@ interface ProfileContentProps {
     id: string;
     note: string | null;
     platform: Platform | null;
-    created_at: string;
+    createdAt: string;
     title: {
       id: string;
       name: string;
       year: number | null;
       type: TitleType;
-      poster_url: string | null;
+      posterUrl: string | null;
     };
   }[];
   stats: {
@@ -66,7 +66,7 @@ export function ProfileContent({
       <div className="px-4 py-4">
         {/* Profile header */}
         <div className="flex items-center gap-4 mb-6">
-          <Avatar src={profile.avatar_url} name={profile.name} size="xl" />
+          <Avatar src={profile.avatarUrl} name={profile.name} size="xl" />
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold">{profile.name}</h2>
             <p className="text-muted">@{profile.username}</p>
@@ -120,9 +120,9 @@ export function ProfileContent({
                 <Link key={rec.id} href={`/title/${rec.title.id}`}>
                   <Card variant="interactive" className="flex gap-3 p-3">
                     <div className="relative w-12 h-18 flex-shrink-0 rounded-lg overflow-hidden bg-secondary">
-                      {rec.title.poster_url ? (
+                      {rec.title.posterUrl ? (
                         <Image
-                          src={rec.title.poster_url}
+                          src={rec.title.posterUrl}
                           alt={rec.title.name}
                           fill
                           className="object-cover"

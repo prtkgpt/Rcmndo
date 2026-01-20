@@ -16,7 +16,7 @@ A mobile-first web app for friends to recommend TV shows and movies and share ho
 - **Framework**: Next.js 14+ (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4 (mobile-first, dark mode default)
-- **Database**: Supabase (PostgreSQL with Row Level Security)
+- **Database**: Neon (Serverless PostgreSQL) with Drizzle ORM
 - **Auth**: Supabase Auth (Magic Link / OTP)
 - **External API**: TMDB for movie/TV metadata
 
@@ -24,7 +24,8 @@ A mobile-first web app for friends to recommend TV shows and movies and share ho
 
 - Node.js 18+
 - npm or yarn
-- Supabase account (free tier works)
+- Neon account (free tier works) - [neon.tech](https://neon.tech)
+- Supabase account (free tier works) - for authentication
 - TMDB API key (free)
 
 ## Setup Instructions
@@ -37,19 +38,30 @@ cd rcmndo
 npm install
 ```
 
-### 2. Set Up Supabase
+### 2. Set Up Neon Database
+
+1. Create a new project at [neon.tech](https://neon.tech)
+2. Copy your connection string → `DATABASE_URL`
+3. Run the database migration:
+
+```bash
+# Generate migration from schema
+npx drizzle-kit generate
+
+# Push schema to database
+npx drizzle-kit push
+```
+
+Or manually run the SQL from `supabase/migrations/001_initial_schema.sql` in the Neon SQL editor (remove RLS policies as they're Supabase-specific).
+
+### 3. Set Up Supabase (Auth Only)
 
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to **Settings > API** and copy:
    - Project URL → `NEXT_PUBLIC_SUPABASE_URL`
    - anon/public key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-3. Run the database migration:
-   - Go to **SQL Editor** in your Supabase dashboard
-   - Copy the contents of `supabase/migrations/001_initial_schema.sql`
-   - Paste and run the SQL
-
-4. Configure Auth:
+3. Configure Auth:
    - Go to **Authentication > Providers**
    - Enable **Email** provider
    - Under **Email Templates**, customize if desired
@@ -57,14 +69,14 @@ npm install
    - Add your site URL to **Site URL** (e.g., `http://localhost:3000` for development)
    - Add redirect URLs as needed
 
-### 3. Set Up TMDB
+### 4. Set Up TMDB
 
 1. Create an account at [themoviedb.org](https://www.themoviedb.org)
 2. Go to **Settings > API**
 3. Request an API key (choose "Developer" option)
 4. Copy your API Key (v3 auth) → `TMDB_API_KEY`
 
-### 4. Configure Environment Variables
+### 5. Configure Environment Variables
 
 ```bash
 cp .env.example .env.local
@@ -73,12 +85,13 @@ cp .env.example .env.local
 Edit `.env.local` with your values:
 
 ```env
+DATABASE_URL=postgresql://user:password@ep-xxxxx.region.aws.neon.tech/neondb?sslmode=require
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 TMDB_API_KEY=your-tmdb-api-key
 ```
 
-### 5. Run Development Server
+### 6. Run Development Server
 
 ```bash
 npm run dev
@@ -100,6 +113,7 @@ git push origin main
 
 1. Go to [vercel.com](https://vercel.com) and import your repo
 2. Add environment variables:
+   - `DATABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `TMDB_API_KEY`
@@ -116,7 +130,7 @@ After deployment, update your Supabase settings:
 
 ### Tables
 
-- **users** - User profiles (extends Supabase auth)
+- **users** - User profiles
 - **friendships** - Friend relationships with status
 - **invite_links** - Shareable invite codes
 - **titles** - Movies/TV shows from TMDB
@@ -124,13 +138,6 @@ After deployment, update your Supabase settings:
 - **reactions** - Likes on recommendations
 - **comments** - Comments on recommendations
 - **watch_status** - User's watchlist tracking
-
-### Row Level Security
-
-All tables have RLS policies that ensure:
-- Users can only read/write their own data
-- Users can see friends' recommendations (accepted friendships only)
-- Titles are readable by all authenticated users
 
 ## Project Structure
 
@@ -156,7 +163,8 @@ src/
 │   ├── recommendation/     # Recommendation cards
 │   └── ui/                 # Reusable UI components
 ├── lib/
-│   ├── supabase/           # Supabase clients
+│   ├── db/                 # Drizzle ORM (schema, queries)
+│   ├── supabase/           # Supabase auth clients
 │   ├── tmdb.ts             # TMDB API helpers
 │   └── utils.ts            # Utility functions
 └── types/
@@ -169,6 +177,9 @@ src/
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npx drizzle-kit generate` - Generate database migrations
+- `npx drizzle-kit push` - Push schema to database
+- `npx drizzle-kit studio` - Open Drizzle Studio (database GUI)
 
 ## Contributing
 

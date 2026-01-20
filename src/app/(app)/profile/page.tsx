@@ -1,87 +1,62 @@
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth";
+import { getUserById, getUserRecommendations, getUserStats } from "@/lib/db/queries";
 import { ProfileContent } from "./profile-content";
-import type { Platform, TitleType, User } from "@/types/database";
+import type { Platform, TitleType } from "@/types/database";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     return null;
   }
 
   // Get user profile
-  const { data: profile } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  const profile = await getUserById(user.id);
 
   if (!profile) {
     return null;
   }
 
-  // Get user's recommendations
-  const { data: recommendations } = await supabase
-    .from("recommendations")
-    .select(
-      `
-      id,
-      note,
-      platform,
-      created_at,
-      title:titles!recommendations_title_id_fkey (
-        id,
-        name,
-        year,
-        type,
-        poster_url
-      )
-    `
-    )
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  // Get user's recommendations with titles
+  const recommendationsData = await getUserRecommendations(user.id);
 
   // Get stats
-  const { count: friendCount } = await supabase
-    .from("friendships")
-    .select("*", { count: "exact", head: true })
-    .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
-    .eq("status", "accepted");
-
-  const { count: watchedCount } = await supabase
-    .from("watch_status")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("status", "watched");
+  const stats = await getUserStats(user.id);
 
   // Transform recommendations to match expected type
-  const transformedRecs = recommendations?.map((rec) => ({
-    id: rec.id as string,
-    note: rec.note as string | null,
+  const transformedRecs = recommendationsData.map((rec) => ({
+    id: rec.id,
+    note: rec.note,
     platform: rec.platform as Platform | null,
-    created_at: rec.created_at as string,
-    title: rec.title as unknown as {
-      id: string;
-      name: string;
-      year: number | null;
-      type: TitleType;
-      poster_url: string | null;
-    },
-  })) || [];
+    createdAt: rec.createdAt.toISOString(),
+    title: rec.title ? {
+      id: rec.title.id,
+      name: rec.title.name,
+      year: rec.title.year,
+      type: rec.title.type as TitleType,
+      posterUrl: rec.title.posterUrl,
+    } : null,
+  })).filter((rec) => rec.title !== null);
 
   return (
     <ProfileContent
-      profile={profile as unknown as User}
-      recommendations={transformedRecs}
-      stats={{
-        recommendations: recommendations?.length || 0,
-        friends: friendCount || 0,
-        watched: watchedCount || 0,
-      }}
+      profile={profile}
+      recommendations={transformedRecs as Array<{
+        id: string;
+        note: string | null;
+        platform: Platform | null;
+        createdAt: string;
+        title: {
+          id: string;
+          name: string;
+          year: number | null;
+          type: TitleType;
+          posterUrl: string | null;
+        };
+      }>}
+      stats={stats}
     />
   );
 }

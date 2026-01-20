@@ -206,9 +206,9 @@ export function TitleContent({
         {/* Title header */}
         <div className="flex gap-4 mb-6">
           <div className="relative w-28 h-[168px] flex-shrink-0 rounded-xl overflow-hidden bg-secondary">
-            {title.poster_url ? (
+            {title.posterUrl ? (
               <Image
-                src={title.poster_url}
+                src={title.posterUrl}
                 alt={title.name}
                 fill
                 className="object-cover"
@@ -281,7 +281,7 @@ export function TitleContent({
 
         {/* Recommend button */}
         {!hasUserRecommended && (
-          <Link href={`/recommend?tmdb=${title.tmdb_id}&type=${title.type}`}>
+          <Link href={`/recommend?tmdb=${title.tmdbId}&type=${title.type}`}>
             <Button className="w-full mb-6">
               <PlusIcon className="w-4 h-4 mr-1.5" />
               Recommend This
