@@ -15,8 +15,6 @@ import {
   CopyIcon,
   ShareIcon,
 } from "@/components/ui/icons";
-import { createClient } from "@/lib/supabase/client";
-import { generateInviteCode } from "@/lib/utils";
 import type { InviteLink } from "@/types/database";
 
 interface FriendItem {
@@ -38,7 +36,6 @@ interface FriendsContentProps {
 }
 
 export function FriendsContent({
-  userId,
   friends: initialFriends,
   pendingReceived: initialPending,
   pendingSent: initialSent,
@@ -47,46 +44,36 @@ export function FriendsContent({
   const router = useRouter();
   const [friends, setFriends] = useState(initialFriends);
   const [pendingReceived, setPendingReceived] = useState(initialPending);
-  const [pendingSent, setPendingSent] = useState(initialSent);
   const [inviteLinks, setInviteLinks] = useState(initialInvites);
-  const [inviteCode, setInviteCode] = useState("");
   const [creatingInvite, setCreatingInvite] = useState(false);
   const [joiningWithCode, setJoiningWithCode] = useState(false);
   const [codeInput, setCodeInput] = useState("");
   const [error, setError] = useState("");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  const supabase = createClient();
-
   const handleCreateInvite = async () => {
     setCreatingInvite(true);
     setError("");
 
-    const code = generateInviteCode();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+    try {
+      const response = await fetch("/api/invite-links", {
+        method: "POST",
+      });
 
-    const { data, error: insertError } = await supabase
-      .from("invite_links")
-      .insert({
-        user_id: userId,
-        code,
-        expires_at: expiresAt.toISOString(),
-      })
-      .select()
-      .single();
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to create invite");
+        setCreatingInvite(false);
+        return;
+      }
+
+      setInviteLinks([data, ...inviteLinks]);
+    } catch {
+      setError("Something went wrong");
+    }
 
     setCreatingInvite(false);
-
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-
-    if (data) {
-      setInviteLinks([data, ...inviteLinks]);
-      setInviteCode(code);
-    }
   };
 
   const handleJoinWithCode = async () => {
@@ -95,88 +82,74 @@ export function FriendsContent({
     setJoiningWithCode(true);
     setError("");
 
-    // Find the invite
-    const { data: invite } = await supabase
-      .from("invite_links")
-      .select("*")
-      .eq("code", codeInput.toUpperCase())
-      .gt("expires_at", new Date().toISOString())
-      .is("used_by", null)
-      .single();
+    try {
+      const response = await fetch("/api/friendships", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: codeInput.toUpperCase() }),
+      });
 
-    if (!invite) {
-      setError("Invalid or expired invite code");
-      setJoiningWithCode(false);
-      return;
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Invalid or expired invite code");
+        setJoiningWithCode(false);
+        return;
+      }
+
+      setCodeInput("");
+      router.refresh();
+    } catch {
+      setError("Something went wrong");
     }
 
-    if (invite.user_id === userId) {
-      setError("You can't use your own invite code");
-      setJoiningWithCode(false);
-      return;
-    }
-
-    // Check if already friends or pending
-    const { data: existing } = await supabase
-      .from("friendships")
-      .select("id")
-      .or(
-        `and(requester_id.eq.${userId},addressee_id.eq.${invite.user_id}),and(requester_id.eq.${invite.user_id},addressee_id.eq.${userId})`
-      )
-      .single();
-
-    if (existing) {
-      setError("You're already connected with this user");
-      setJoiningWithCode(false);
-      return;
-    }
-
-    // Create friendship
-    const { error: friendError } = await supabase.from("friendships").insert({
-      requester_id: invite.user_id,
-      addressee_id: userId,
-      status: "accepted",
-      invite_code: codeInput.toUpperCase(),
-    });
-
-    if (friendError) {
-      setError(friendError.message);
-      setJoiningWithCode(false);
-      return;
-    }
-
-    // Mark invite as used
-    await supabase
-      .from("invite_links")
-      .update({ used_by: userId })
-      .eq("id", invite.id);
-
-    setCodeInput("");
     setJoiningWithCode(false);
-    router.refresh();
   };
 
   const handleAcceptRequest = async (friendshipId: string) => {
-    await supabase
-      .from("friendships")
-      .update({ status: "accepted" })
-      .eq("id", friendshipId);
+    try {
+      await fetch("/api/friendships", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ friendshipId, action: "accept" }),
+      });
 
-    const accepted = pendingReceived.find((p) => p.friendshipId === friendshipId);
-    if (accepted) {
-      setFriends([accepted, ...friends]);
-      setPendingReceived(pendingReceived.filter((p) => p.friendshipId !== friendshipId));
+      const accepted = pendingReceived.find((p) => p.friendshipId === friendshipId);
+      if (accepted) {
+        setFriends([accepted, ...friends]);
+        setPendingReceived(pendingReceived.filter((p) => p.friendshipId !== friendshipId));
+      }
+    } catch {
+      // Handle error silently
     }
   };
 
   const handleRejectRequest = async (friendshipId: string) => {
-    await supabase.from("friendships").delete().eq("id", friendshipId);
-    setPendingReceived(pendingReceived.filter((p) => p.friendshipId !== friendshipId));
+    try {
+      await fetch("/api/friendships", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ friendshipId }),
+      });
+
+      setPendingReceived(pendingReceived.filter((p) => p.friendshipId !== friendshipId));
+    } catch {
+      // Handle error silently
+    }
   };
 
   const handleRemoveFriend = async (friendshipId: string) => {
-    await supabase.from("friendships").delete().eq("id", friendshipId);
-    setFriends(friends.filter((f) => f.friendshipId !== friendshipId));
+    try {
+      await fetch("/api/friendships", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ friendshipId }),
+      });
+
+      setFriends(friends.filter((f) => f.friendshipId !== friendshipId));
+    } catch {
+      // Handle error silently
+    }
   };
 
   const copyInviteLink = async (code: string) => {
@@ -321,11 +294,11 @@ export function FriendsContent({
         )}
 
         {/* Pending sent */}
-        {pendingSent.length > 0 && (
+        {initialSent.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-3">Sent Requests</h3>
             <div className="space-y-2">
-              {pendingSent.map((request) => (
+              {initialSent.map((request) => (
                 <Card key={request.friendshipId} className="flex items-center gap-3 p-3">
                   <Avatar
                     src={request.user.avatar_url}

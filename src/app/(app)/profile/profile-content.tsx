@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { Header } from "@/components/layout/header";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PlatformBadge } from "@/components/ui/platform-badge";
 import { UsersIcon, FilmIcon, TvIcon, ChevronRightIcon } from "@/components/ui/icons";
-import { createClient } from "@/lib/supabase/client";
 import type { User, Platform, TitleType } from "@/types/database";
 
 interface ProfileContentProps {
@@ -43,13 +43,9 @@ export function ProfileContent({
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const supabase = createClient();
-
   const handleLogout = async () => {
     setLoggingOut(true);
-    await supabase.auth.signOut();
-    router.push("/login");
-    router.refresh();
+    await signOut({ callbackUrl: "/login" });
   };
 
   return (

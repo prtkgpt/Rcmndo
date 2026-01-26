@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 
 // Create a singleton for the database connection
-let db: ReturnType<typeof createDb> | null = null;
+let dbInstance: ReturnType<typeof createDb> | null = null;
 
 function createDb() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -21,11 +21,14 @@ function createDb() {
 }
 
 export function getDb() {
-  if (!db) {
-    db = createDb();
+  if (!dbInstance) {
+    dbInstance = createDb();
   }
-  return db;
+  return dbInstance;
 }
+
+// Export a db instance for libraries that expect direct db export (like DrizzleAdapter)
+export const db = createDb();
 
 // Export schema for use in queries
 export * from "./schema";

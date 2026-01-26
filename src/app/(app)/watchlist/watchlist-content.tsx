@@ -15,7 +15,6 @@ import {
   ClockIcon,
   XMarkIcon,
 } from "@/components/ui/icons";
-import { createClient } from "@/lib/supabase/client";
 import type { Platform, WatchStatusType, TitleType } from "@/types/database";
 
 interface WatchlistItem {
@@ -43,13 +42,10 @@ type TypeFilter = "all" | "movie" | "tv";
 
 export function WatchlistContent({
   initialItems,
-  userId,
 }: WatchlistContentProps) {
   const [items, setItems] = useState(initialItems);
   const [statusFilter, setStatusFilter] = useState<FilterType>("all");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
-
-  const supabase = createClient();
 
   const filteredItems = items.filter((item) => {
     if (statusFilter !== "all" && item.status !== statusFilter) return false;
@@ -59,9 +55,14 @@ export function WatchlistContent({
 
   const handleStatusChange = async (
     itemId: string,
+    titleId: string,
     newStatus: WatchStatusType
   ) => {
-    await supabase.from("watch_status").update({ status: newStatus }).eq("id", itemId);
+    await fetch("/api/watch-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titleId, status: newStatus }),
+    });
 
     setItems(
       items.map((item) =>
@@ -70,8 +71,12 @@ export function WatchlistContent({
     );
   };
 
-  const handleRemove = async (itemId: string) => {
-    await supabase.from("watch_status").delete().eq("id", itemId);
+  const handleRemove = async (itemId: string, titleId: string) => {
+    await fetch("/api/watch-status", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titleId }),
+    });
     setItems(items.filter((item) => item.id !== itemId));
   };
 
@@ -208,6 +213,7 @@ export function WatchlistContent({
                       onClick={() =>
                         handleStatusChange(
                           item.id,
+                          item.title.id,
                           item.status === "saved" ? "watching" : "saved"
                         )
                       }
@@ -228,6 +234,7 @@ export function WatchlistContent({
                       onClick={() =>
                         handleStatusChange(
                           item.id,
+                          item.title.id,
                           item.status === "watched" ? "saved" : "watched"
                         )
                       }
@@ -243,7 +250,7 @@ export function WatchlistContent({
                       <CheckIcon className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleRemove(item.id)}
+                      onClick={() => handleRemove(item.id, item.title.id)}
                       className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors ml-auto"
                       title="Remove from watchlist"
                     >

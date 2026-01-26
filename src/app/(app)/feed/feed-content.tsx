@@ -5,7 +5,6 @@ import { RecommendationCard } from "@/components/recommendation/recommendation-c
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { UsersIcon } from "@/components/ui/icons";
-import { createClient } from "@/lib/supabase/client";
 import type { Platform, TitleType } from "@/types/database";
 
 interface FeedItem {
@@ -34,52 +33,43 @@ interface FeedContentProps {
   userId: string;
 }
 
-export function FeedContent({ initialItems, userId }: FeedContentProps) {
-  const supabase = createClient();
-
-  const handleLike = async (recommendationId: string, isLiked: boolean) => {
-    if (isLiked) {
-      await supabase
-        .from("reactions")
-        .delete()
-        .eq("user_id", userId)
-        .eq("recommendation_id", recommendationId);
-    } else {
-      await supabase.from("reactions").insert({
-        user_id: userId,
-        recommendation_id: recommendationId,
-      });
-    }
+export function FeedContent({ initialItems }: FeedContentProps) {
+  const handleLike = async (recommendationId: string) => {
+    await fetch("/api/reactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recommendationId }),
+    });
   };
 
   const handleSave = async (titleId: string, isSaved: boolean) => {
     if (isSaved) {
-      await supabase
-        .from("watch_status")
-        .delete()
-        .eq("user_id", userId)
-        .eq("title_id", titleId);
+      await fetch("/api/watch-status", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId }),
+      });
     } else {
-      await supabase.from("watch_status").upsert({
-        user_id: userId,
-        title_id: titleId,
-        status: "saved",
+      await fetch("/api/watch-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId, status: "saved" }),
       });
     }
   };
 
   const handleWatched = async (titleId: string, isWatched: boolean) => {
     if (isWatched) {
-      await supabase
-        .from("watch_status")
-        .delete()
-        .eq("user_id", userId)
-        .eq("title_id", titleId);
+      await fetch("/api/watch-status", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId }),
+      });
     } else {
-      await supabase.from("watch_status").upsert({
-        user_id: userId,
-        title_id: titleId,
-        status: "watched",
+      await fetch("/api/watch-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId, status: "watched" }),
       });
     }
   };
@@ -115,7 +105,7 @@ export function FeedContent({ initialItems, userId }: FeedContentProps) {
           <RecommendationCard
             key={item.id}
             {...item}
-            onLike={() => handleLike(item.id, item.userHasLiked)}
+            onLike={() => handleLike(item.id)}
             onSave={() => handleSave(item.titleId, item.userHasSaved)}
             onWatched={() => handleWatched(item.titleId, item.userHasWatched)}
           />

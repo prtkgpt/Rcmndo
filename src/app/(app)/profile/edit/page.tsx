@@ -6,7 +6,6 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingScreen } from "@/components/ui/spinner";
-import { createClient } from "@/lib/supabase/client";
 import { validateUsername } from "@/lib/utils";
 import type { User } from "@/types/database";
 
@@ -22,36 +21,29 @@ export default function EditProfilePage() {
   const [usernameError, setUsernameError] = useState("");
   const [checkingUsername, setCheckingUsername] = useState(false);
 
-  const supabase = createClient();
-
   useEffect(() => {
     const loadProfile = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const response = await fetch("/api/users/me");
+        const data = await response.json();
 
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+        if (!response.ok) {
+          router.push("/login");
+          return;
+        }
 
-      const { data } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (data) {
         setProfile(data);
         setName(data.name);
-        setUsername(data.username);
-        setOriginalUsername(data.username);
+        setUsername(data.username || "");
+        setOriginalUsername(data.username || "");
+      } catch {
+        router.push("/login");
       }
       setLoading(false);
     };
 
     loadProfile();
-  }, [supabase, router]);
+  }, [router]);
 
   // Check username availability
   useEffect(() => {
@@ -68,24 +60,28 @@ export default function EditProfilePage() {
       }
 
       setCheckingUsername(true);
-      const { data } = await supabase
-        .from("users")
-        .select("id")
-        .eq("username", username.toLowerCase())
-        .single();
+
+      try {
+        const response = await fetch(
+          `/api/users/check-username?username=${encodeURIComponent(username)}`
+        );
+        const data = await response.json();
+
+        if (!data.available) {
+          setUsernameError("Username is already taken");
+        } else {
+          setUsernameError("");
+        }
+      } catch {
+        setUsernameError("Error checking username");
+      }
 
       setCheckingUsername(false);
-
-      if (data) {
-        setUsernameError("Username is already taken");
-      } else {
-        setUsernameError("");
-      }
     };
 
     const timeoutId = setTimeout(checkUsername, 500);
     return () => clearTimeout(timeoutId);
-  }, [username, originalUsername, supabase]);
+  }, [username, originalUsername]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,22 +98,30 @@ export default function EditProfilePage() {
 
     setSaving(true);
 
-    const { error: updateError } = await supabase
-      .from("users")
-      .update({
-        name: name.trim(),
-        username: username.toLowerCase(),
-      })
-      .eq("id", profile?.id);
+    try {
+      const response = await fetch("/api/users/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          username: username.toLowerCase(),
+        }),
+      });
 
-    if (updateError) {
-      setError(updateError.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to update profile");
+        setSaving(false);
+        return;
+      }
+
+      router.push("/profile");
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
       setSaving(false);
-      return;
     }
-
-    router.push("/profile");
-    router.refresh();
   };
 
   if (loading) {

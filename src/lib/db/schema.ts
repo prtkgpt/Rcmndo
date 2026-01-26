@@ -8,9 +8,9 @@ import {
   index,
   integer,
   check,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
-
 // Enums
 export const platformTypeEnum = pgEnum("platform_type", [
   "netflix",
@@ -37,15 +37,71 @@ export const watchStatusTypeEnum = pgEnum("watch_status_type", [
 
 export const titleTypeEnum = pgEnum("title_type", ["movie", "tv"]);
 
+// NextAuth Accounts table (for OAuth providers)
+export const accounts = pgTable(
+  "accounts",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (account) => ({
+    compoundKey: primaryKey({
+      columns: [account.provider, account.providerAccountId],
+    }),
+    userIdx: index("idx_accounts_user").on(account.userId),
+  })
+);
+
+// NextAuth Sessions table
+export const sessions = pgTable(
+  "sessions",
+  {
+    sessionToken: text("session_token").primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (session) => ({
+    userIdx: index("idx_sessions_user").on(session.userId),
+  })
+);
+
+// NextAuth Verification Tokens table (for email magic links)
+export const verificationTokens = pgTable(
+  "verification_tokens",
+  {
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+  },
+  (vt) => ({
+    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+  })
+);
+
 // Users table
 export const users = pgTable(
   "users",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     email: text("email").notNull().unique(),
-    name: text("name").notNull(),
-    username: text("username").notNull().unique(),
+    emailVerified: timestamp("email_verified", { mode: "date" }),
+    name: text("name").notNull().default(""),
+    username: text("username").unique(),
     avatarUrl: text("avatar_url"),
+    image: text("image"), // For NextAuth compatibility
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -258,6 +314,8 @@ export const watchStatus = pgTable(
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
+  accounts: many(accounts),
+  sessions: many(sessions),
   friendshipsAsRequester: many(friendships, { relationName: "requester" }),
   friendshipsAsAddressee: many(friendships, { relationName: "addressee" }),
   inviteLinks: many(inviteLinks),
@@ -265,6 +323,20 @@ export const usersRelations = relations(users, ({ many }) => ({
   reactions: many(reactions),
   comments: many(comments),
   watchStatuses: many(watchStatus),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
 }));
 
 export const friendshipsRelations = relations(friendships, ({ one }) => ({
@@ -346,6 +418,12 @@ export const watchStatusRelations = relations(watchStatus, ({ one }) => ({
 }));
 
 // Type exports
+export type Account = typeof accounts.$inferSelect;
+export type NewAccount = typeof accounts.$inferInsert;
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;
+export type VerificationToken = typeof verificationTokens.$inferSelect;
+export type NewVerificationToken = typeof verificationTokens.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Friendship = typeof friendships.$inferSelect;

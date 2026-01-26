@@ -337,6 +337,13 @@ export async function getTitleById(id: string): Promise<Title | null> {
   return result[0] || null;
 }
 
+export async function getTitlesByTmdbIds(tmdbIds: number[]): Promise<Title[]> {
+  if (tmdbIds.length === 0) return [];
+  const db = getDb();
+  const result = await db.select().from(titles).where(inArray(titles.tmdbId, tmdbIds));
+  return result;
+}
+
 export async function createTitle(data: NewTitle): Promise<Title> {
   const db = getDb();
   const result = await db.insert(titles).values(data).returning();

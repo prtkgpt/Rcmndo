@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { validateUsername } from "@/lib/utils";
@@ -16,8 +15,6 @@ export default function OnboardingPage() {
   const [error, setError] = useState("");
   const [usernameError, setUsernameError] = useState("");
   const [usernameAvailable, setUsernameAvailable] = useState(false);
-
-  const supabase = createClient();
 
   // Check username availability with debounce
   useEffect(() => {
@@ -36,26 +33,32 @@ export default function OnboardingPage() {
       }
 
       setCheckingUsername(true);
-      const { data } = await supabase
-        .from("users")
-        .select("id")
-        .eq("username", username.toLowerCase())
-        .single();
 
-      setCheckingUsername(false);
+      try {
+        const response = await fetch(
+          `/api/users/check-username?username=${encodeURIComponent(username)}`
+        );
+        const data = await response.json();
 
-      if (data) {
-        setUsernameError("Username is already taken");
+        setCheckingUsername(false);
+
+        if (data.available) {
+          setUsernameError("");
+          setUsernameAvailable(true);
+        } else {
+          setUsernameError("Username is already taken");
+          setUsernameAvailable(false);
+        }
+      } catch {
+        setCheckingUsername(false);
+        setUsernameError("Error checking username");
         setUsernameAvailable(false);
-      } else {
-        setUsernameError("");
-        setUsernameAvailable(true);
       }
     };
 
     const timeoutId = setTimeout(checkUsername, 500);
     return () => clearTimeout(timeoutId);
-  }, [username, supabase]);
+  }, [username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,63 +75,35 @@ export default function OnboardingPage() {
 
     setLoading(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setError("Not authenticated");
-      setLoading(false);
-      return;
-    }
-
-    // Create user profile
-    const { error: profileError } = await supabase.from("users").insert({
-      id: user.id,
-      email: user.email!,
-      name: name.trim(),
-      username: username.toLowerCase(),
-    });
-
-    if (profileError) {
-      setError(profileError.message);
-      setLoading(false);
-      return;
-    }
-
-    // Check for invite code and create friendship
-    const inviteCode = sessionStorage.getItem("inviteCode");
-    if (inviteCode) {
+    try {
+      // Get invite code from session storage
+      const inviteCode = sessionStorage.getItem("inviteCode");
       sessionStorage.removeItem("inviteCode");
 
-      // Find the invite link
-      const { data: invite } = await supabase
-        .from("invite_links")
-        .select("*")
-        .eq("code", inviteCode)
-        .gt("expires_at", new Date().toISOString())
-        .is("used_by", null)
-        .single();
+      const response = await fetch("/api/users/complete-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          username: username.toLowerCase(),
+          inviteCode,
+        }),
+      });
 
-      if (invite && invite.user_id !== user.id) {
-        // Create friendship
-        await supabase.from("friendships").insert({
-          requester_id: invite.user_id,
-          addressee_id: user.id,
-          status: "accepted",
-          invite_code: inviteCode,
-        });
+      const data = await response.json();
 
-        // Mark invite as used
-        await supabase
-          .from("invite_links")
-          .update({ used_by: user.id })
-          .eq("id", invite.id);
+      if (!response.ok) {
+        setError(data.error || "Something went wrong");
+        setLoading(false);
+        return;
       }
-    }
 
-    router.push("/feed");
-    router.refresh();
+      router.push("/feed");
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (

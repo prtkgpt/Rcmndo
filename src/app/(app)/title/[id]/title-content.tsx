@@ -21,7 +21,6 @@ import {
   LinkIcon,
   PlusIcon,
 } from "@/components/ui/icons";
-import { createClient } from "@/lib/supabase/client";
 import { formatDistanceToNow } from "@/lib/utils";
 import type { Title, Platform, WatchStatusType } from "@/types/database";
 
@@ -36,7 +35,7 @@ interface RecommendationItem {
   user: {
     id: string;
     name: string;
-    username: string;
+    username: string | null;
     avatar_url: string | null;
   };
   reactionCount: number;
@@ -48,7 +47,7 @@ interface RecommendationItem {
     user: {
       id: string;
       name: string;
-      username: string;
+      username: string | null;
       avatar_url: string | null;
     };
   }[];
@@ -79,21 +78,19 @@ export function TitleContent({
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
 
-  const supabase = createClient();
-
   const handleSave = async () => {
     if (watchStatus === "saved") {
-      await supabase
-        .from("watch_status")
-        .delete()
-        .eq("user_id", userId)
-        .eq("title_id", title.id);
+      await fetch("/api/watch-status", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId: title.id }),
+      });
       setWatchStatus(null);
     } else {
-      await supabase.from("watch_status").upsert({
-        user_id: userId,
-        title_id: title.id,
-        status: "saved",
+      await fetch("/api/watch-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId: title.id, status: "saved" }),
       });
       setWatchStatus("saved");
     }
@@ -101,35 +98,28 @@ export function TitleContent({
 
   const handleWatched = async () => {
     if (watchStatus === "watched") {
-      await supabase
-        .from("watch_status")
-        .delete()
-        .eq("user_id", userId)
-        .eq("title_id", title.id);
+      await fetch("/api/watch-status", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId: title.id }),
+      });
       setWatchStatus(null);
     } else {
-      await supabase.from("watch_status").upsert({
-        user_id: userId,
-        title_id: title.id,
-        status: "watched",
+      await fetch("/api/watch-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titleId: title.id, status: "watched" }),
       });
       setWatchStatus("watched");
     }
   };
 
   const handleLike = async (recId: string, isLiked: boolean) => {
-    if (isLiked) {
-      await supabase
-        .from("reactions")
-        .delete()
-        .eq("user_id", userId)
-        .eq("recommendation_id", recId);
-    } else {
-      await supabase.from("reactions").insert({
-        user_id: userId,
-        recommendation_id: recId,
-      });
-    }
+    await fetch("/api/reactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recommendationId: recId }),
+    });
 
     setRecs(
       recs.map((rec) =>
@@ -151,51 +141,48 @@ export function TitleContent({
 
     setSubmittingComment(true);
 
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", userId)
-      .single();
+    try {
+      const response = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recommendationId: recId,
+          content: commentText.trim(),
+        }),
+      });
 
-    const { data: newComment, error } = await supabase
-      .from("comments")
-      .insert({
-        user_id: userId,
-        recommendation_id: recId,
-        content: commentText.trim(),
-      })
-      .select()
-      .single();
+      const newComment = await response.json();
+
+      if (!response.ok) {
+        setSubmittingComment(false);
+        return;
+      }
+
+      setRecs(
+        recs.map((rec) =>
+          rec.id === recId
+            ? {
+                ...rec,
+                comments: [
+                  ...rec.comments,
+                  {
+                    id: newComment.id,
+                    content: newComment.content,
+                    createdAt: newComment.createdAt,
+                    user: newComment.user,
+                  },
+                ],
+              }
+            : rec
+        )
+      );
+
+      setCommentText("");
+    } catch {
+      // Handle error silently
+    }
 
     setSubmittingComment(false);
-
-    if (error || !newComment) return;
-
-    setRecs(
-      recs.map((rec) =>
-        rec.id === recId
-          ? {
-              ...rec,
-              comments: [
-                ...rec.comments,
-                {
-                  id: newComment.id,
-                  content: newComment.content,
-                  createdAt: newComment.created_at,
-                  user: {
-                    id: userData?.id || userId,
-                    name: userData?.name || "You",
-                    username: userData?.username || "",
-                    avatar_url: userData?.avatar_url || null,
-                  },
-                },
-              ],
-            }
-          : rec
-      )
-    );
-
-    setCommentText("");
   };
 
   return (

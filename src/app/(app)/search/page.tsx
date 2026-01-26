@@ -4,12 +4,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/layout/header";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchIcon, FilmIcon, TvIcon } from "@/components/ui/icons";
-import { createClient } from "@/lib/supabase/client";
 import type { NormalizedTitle } from "@/lib/tmdb";
 
 type FilterType = "all" | "movie" | "tv";
@@ -20,8 +18,6 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<FilterType>("all");
   const [titleIds, setTitleIds] = useState<Record<string, string>>({});
-
-  const supabase = createClient();
 
   useEffect(() => {
     const search = async () => {
@@ -44,14 +40,14 @@ export default function SearchPage() {
         // Check which titles already exist in our database
         if (data.results?.length > 0) {
           const tmdbIds = data.results.map((r: NormalizedTitle) => r.tmdb_id);
-          const { data: existingTitles } = await supabase
-            .from("titles")
-            .select("id, tmdb_id, type")
-            .in("tmdb_id", tmdbIds);
+          const titlesResponse = await fetch(
+            `/api/titles/by-tmdb?ids=${tmdbIds.join(",")}`
+          );
+          const titlesData = await titlesResponse.json();
 
           const idMap: Record<string, string> = {};
-          existingTitles?.forEach((t) => {
-            idMap[`${t.tmdb_id}-${t.type}`] = t.id;
+          titlesData?.forEach((t: { id: string; tmdbId: number; type: string }) => {
+            idMap[`${t.tmdbId}-${t.type}`] = t.id;
           });
           setTitleIds(idMap);
         }
@@ -64,7 +60,7 @@ export default function SearchPage() {
 
     const timeoutId = setTimeout(search, 300);
     return () => clearTimeout(timeoutId);
-  }, [query, filter, supabase]);
+  }, [query, filter]);
 
   const getTitleLink = (title: NormalizedTitle) => {
     const existingId = titleIds[`${title.tmdb_id}-${title.type}`];

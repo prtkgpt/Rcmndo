@@ -13,7 +13,6 @@ import { Spinner, LoadingScreen } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchIcon, FilmIcon, TvIcon } from "@/components/ui/icons";
 import { PLATFORM_OPTIONS } from "@/components/ui/platform-badge";
-import { createClient } from "@/lib/supabase/client";
 import type { NormalizedTitle } from "@/lib/tmdb";
 
 function RecommendPageContent() {
@@ -42,19 +41,12 @@ function RecommendPageContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const supabase = createClient();
-
   // Load title from TMDB if provided in URL
   useEffect(() => {
     const loadTitle = async () => {
       if (tmdbId && titleType && !selectedTitle) {
         setLoadingTitle(true);
         try {
-          const endpoint =
-            titleType === "movie"
-              ? `https://api.themoviedb.org/3/movie/${tmdbId}`
-              : `https://api.themoviedb.org/3/tv/${tmdbId}`;
-
           // Fetch from our API route which has the API key
           const response = await fetch(
             `/api/tmdb/search?q=id:${tmdbId}&type=${titleType}`
@@ -90,8 +82,8 @@ function RecommendPageContent() {
         );
         const data = await response.json();
         setSearchResults(data.results || []);
-      } catch (error) {
-        console.error("Search error:", error);
+      } catch (err) {
+        console.error("Search error:", err);
       }
 
       setSearching(false);
@@ -129,97 +121,33 @@ function RecommendPageContent() {
 
     setSubmitting(true);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setError("Not authenticated");
-      setSubmitting(false);
-      return;
-    }
-
-    // Check if title exists, if not create it
-    let titleId: string;
-
-    const { data: existingTitle } = await supabase
-      .from("titles")
-      .select("id")
-      .eq("tmdb_id", selectedTitle.tmdb_id)
-      .eq("type", selectedTitle.type)
-      .single();
-
-    if (existingTitle) {
-      titleId = existingTitle.id;
-    } else {
-      const { data: newTitle, error: titleError } = await supabase
-        .from("titles")
-        .insert({
-          tmdb_id: selectedTitle.tmdb_id,
-          type: selectedTitle.type,
-          name: selectedTitle.name,
-          year: selectedTitle.year,
-          poster_url: selectedTitle.poster_url,
-          backdrop_url: selectedTitle.backdrop_url,
-          overview: selectedTitle.overview,
-        })
-        .select("id")
-        .single();
-
-      if (titleError || !newTitle) {
-        setError("Failed to create title");
-        setSubmitting(false);
-        return;
-      }
-
-      titleId = newTitle.id;
-    }
-
-    // Check if user already recommended this title
-    const { data: existingRec } = await supabase
-      .from("recommendations")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("title_id", titleId)
-      .single();
-
-    if (existingRec) {
-      // Update existing recommendation
-      const { error: updateError } = await supabase
-        .from("recommendations")
-        .update({
+    try {
+      const response = await fetch("/api/recommendations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: selectedTitle,
           note: note || null,
-          tags,
           platform: platform || null,
-          watch_url: watchUrl || null,
-        })
-        .eq("id", existingRec.id);
-
-      if (updateError) {
-        setError(updateError.message);
-        setSubmitting(false);
-        return;
-      }
-    } else {
-      // Create new recommendation
-      const { error: recError } = await supabase.from("recommendations").insert({
-        user_id: user.id,
-        title_id: titleId,
-        note: note || null,
-        tags,
-        platform: platform || null,
-        watch_url: watchUrl || null,
+          watchUrl: watchUrl || null,
+          tags,
+        }),
       });
 
-      if (recError) {
-        setError(recError.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to create recommendation");
         setSubmitting(false);
         return;
       }
-    }
 
-    router.push(`/title/${titleId}`);
-    router.refresh();
+      router.push(`/title/${data.title.id}`);
+      router.refresh();
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   if (loadingTitle) {
