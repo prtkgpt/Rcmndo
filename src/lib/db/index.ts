@@ -1,33 +1,21 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import { Pool } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
 import * as schema from "./schema";
-
-// Create a singleton for the database connection
-let dbInstance: ReturnType<typeof createDb> | null = null;
 
 function createDb() {
   const databaseUrl = process.env.DATABASE_URL;
 
   if (!databaseUrl) {
-    // During build time, return a placeholder
-    // This won't be used for actual queries during build
     console.warn("DATABASE_URL not set, using placeholder for build");
-    const placeholderSql = neon("postgresql://placeholder:placeholder@placeholder.neon.tech/placeholder");
-    return drizzle(placeholderSql, { schema });
+    const pool = new Pool({ connectionString: "postgresql://placeholder:placeholder@placeholder.neon.tech/placeholder" });
+    return drizzle(pool, { schema });
   }
 
-  const sql = neon(databaseUrl);
-  return drizzle(sql, { schema });
+  const pool = new Pool({ connectionString: databaseUrl });
+  return drizzle(pool, { schema });
 }
 
-export function getDb() {
-  if (!dbInstance) {
-    dbInstance = createDb();
-  }
-  return dbInstance;
-}
-
-// Export a db instance for libraries that expect direct db export (like DrizzleAdapter)
+// Export a db instance
 export const db = createDb();
 
 // Export schema for use in queries

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { updateUser, getUserByUsername, getInviteLinkByCode, markInviteLinkUsed, createFriendship, getUserById } from "@/lib/db/queries";
-import { getDb, eq, or, and } from "@/lib/db";
+import { db, eq, or, and } from "@/lib/db";
 import { friendships } from "@/lib/db/schema";
 
 export async function POST(request: NextRequest) {
@@ -38,8 +38,6 @@ export async function POST(request: NextRequest) {
       const invite = await getInviteLinkByCode(inviteCode);
 
       if (invite && new Date(invite.expiresAt) > new Date() && !invite.usedBy && invite.userId !== session.user.id) {
-        const db = getDb();
-
         // Check if already friends
         const existing = await db
           .select()

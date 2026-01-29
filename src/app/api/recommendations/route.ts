@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getOrCreateTitle, createRecommendation } from "@/lib/db/queries";
-import { getDb, eq, and } from "@/lib/db";
+import { db, eq, and } from "@/lib/db";
 import { recommendations } from "@/lib/db/schema";
 import type { TitleType } from "@/types/database";
 
@@ -28,8 +28,6 @@ export async function POST(request: NextRequest) {
       backdropUrl: title.backdrop_url || null,
       overview: title.overview || null,
     });
-
-    const db = getDb();
 
     // Check if user already recommended this title
     const existingRec = await db

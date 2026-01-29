@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { acceptFriendship, deleteFriendship, createFriendship, getInviteLinkByCode, markInviteLinkUsed } from "@/lib/db/queries";
-import { getDb, eq, or, and } from "@/lib/db";
+import { db, eq, or, and } from "@/lib/db";
 import { friendships } from "@/lib/db/schema";
 
 export async function PATCH(request: NextRequest) {
@@ -81,7 +81,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already friends or pending
-    const db = getDb();
     const existing = await db
       .select()
       .from(friendships)

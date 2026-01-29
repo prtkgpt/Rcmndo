@@ -1,4 +1,4 @@
-import { getDb, eq, and, or, desc, inArray, sql } from "./index";
+import { db, eq, and, or, desc, inArray, sql } from "./index";
 import {
   users,
   friendships,
@@ -20,31 +20,26 @@ import type { Platform, FeedItem, FriendWithUser } from "@/types/database";
 // ============ USER QUERIES ============
 
 export async function getUserById(userId: string): Promise<User | null> {
-  const db = getDb();
   const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return result[0] || null;
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const db = getDb();
   const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
   return result[0] || null;
 }
 
 export async function getUserByUsername(username: string): Promise<User | null> {
-  const db = getDb();
   const result = await db.select().from(users).where(eq(users.username, username.toLowerCase())).limit(1);
   return result[0] || null;
 }
 
 export async function createUser(data: NewUser): Promise<User> {
-  const db = getDb();
   const result = await db.insert(users).values(data).returning();
   return result[0];
 }
 
 export async function updateUser(userId: string, data: Partial<NewUser>): Promise<User | null> {
-  const db = getDb();
   const result = await db.update(users).set(data).where(eq(users.id, userId)).returning();
   return result[0] || null;
 }
@@ -52,7 +47,6 @@ export async function updateUser(userId: string, data: Partial<NewUser>): Promis
 // ============ FRIEND QUERIES ============
 
 export async function getFriendIds(userId: string): Promise<string[]> {
-  const db = getDb();
   const result = await db
     .select({
       friendId: sql<string>`
@@ -76,8 +70,6 @@ export async function getFriendIds(userId: string): Promise<string[]> {
 }
 
 export async function getFriendsWithDetails(userId: string): Promise<FriendWithUser[]> {
-  const db = getDb();
-
   // Get all accepted friendships where user is involved
   const friendshipsList = await db
     .select()
@@ -121,8 +113,6 @@ export async function getFriendsWithDetails(userId: string): Promise<FriendWithU
 }
 
 export async function getPendingFriendRequests(userId: string): Promise<FriendWithUser[]> {
-  const db = getDb();
-
   const pendingList = await db
     .select()
     .from(friendships)
@@ -156,7 +146,6 @@ export async function getPendingFriendRequests(userId: string): Promise<FriendWi
 }
 
 export async function createFriendship(requesterId: string, addresseeId: string, status: "pending" | "accepted" = "pending") {
-  const db = getDb();
   return db.insert(friendships).values({
     requesterId,
     addresseeId,
@@ -165,7 +154,6 @@ export async function createFriendship(requesterId: string, addresseeId: string,
 }
 
 export async function acceptFriendship(friendshipId: string) {
-  const db = getDb();
   return db.update(friendships)
     .set({ status: "accepted" })
     .where(eq(friendships.id, friendshipId))
@@ -173,13 +161,10 @@ export async function acceptFriendship(friendshipId: string) {
 }
 
 export async function deleteFriendship(friendshipId: string) {
-  const db = getDb();
   return db.delete(friendships).where(eq(friendships.id, friendshipId));
 }
 
 export async function getAllFriendshipsForUser(userId: string) {
-  const db = getDb();
-
   // Get all friendships
   const allFriendships = await db
     .select()
@@ -261,7 +246,6 @@ export async function getAllFriendshipsForUser(userId: string) {
 // ============ INVITE LINK QUERIES ============
 
 export async function getInviteLinkByCode(code: string) {
-  const db = getDb();
   const result = await db
     .select()
     .from(inviteLinks)
@@ -271,7 +255,6 @@ export async function getInviteLinkByCode(code: string) {
 }
 
 export async function createInviteLink(userId: string) {
-  const db = getDb();
   const code = generateInviteCode();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
@@ -284,7 +267,6 @@ export async function createInviteLink(userId: string) {
 }
 
 export async function markInviteLinkUsed(linkId: string, usedBy: string) {
-  const db = getDb();
   return db.update(inviteLinks)
     .set({ usedBy })
     .where(eq(inviteLinks.id, linkId))
@@ -292,7 +274,6 @@ export async function markInviteLinkUsed(linkId: string, usedBy: string) {
 }
 
 export async function getActiveInviteLinks(userId: string) {
-  const db = getDb();
   const now = new Date();
 
   const result = await db
@@ -322,7 +303,6 @@ function generateInviteCode(): string {
 // ============ TITLE QUERIES ============
 
 export async function getTitleByTmdbId(tmdbId: number, type: "movie" | "tv"): Promise<Title | null> {
-  const db = getDb();
   const result = await db
     .select()
     .from(titles)
@@ -332,20 +312,18 @@ export async function getTitleByTmdbId(tmdbId: number, type: "movie" | "tv"): Pr
 }
 
 export async function getTitleById(id: string): Promise<Title | null> {
-  const db = getDb();
   const result = await db.select().from(titles).where(eq(titles.id, id)).limit(1);
   return result[0] || null;
 }
 
 export async function getTitlesByTmdbIds(tmdbIds: number[]): Promise<Title[]> {
   if (tmdbIds.length === 0) return [];
-  const db = getDb();
+
   const result = await db.select().from(titles).where(inArray(titles.tmdbId, tmdbIds));
   return result;
 }
 
 export async function createTitle(data: NewTitle): Promise<Title> {
-  const db = getDb();
   const result = await db.insert(titles).values(data).returning();
   return result[0];
 }
@@ -360,8 +338,6 @@ export async function getOrCreateTitle(data: NewTitle): Promise<Title> {
 
 export async function getFeedItems(userId: string, friendIds: string[]): Promise<FeedItem[]> {
   if (friendIds.length === 0) return [];
-
-  const db = getDb();
 
   // Get recommendations from friends
   const recs = await db
@@ -421,8 +397,6 @@ export async function getFeedItems(userId: string, friendIds: string[]): Promise
 }
 
 export async function getUserRecommendations(userId: string) {
-  const db = getDb();
-
   const recs = await db
     .select()
     .from(recommendations)
@@ -444,14 +418,11 @@ export async function getUserRecommendations(userId: string) {
 }
 
 export async function createRecommendation(data: NewRecommendation) {
-  const db = getDb();
   const result = await db.insert(recommendations).values(data).returning();
   return result[0];
 }
 
 export async function getRecommendationsByTitle(titleId: string, viewerFriendIds: string[]) {
-  const db = getDb();
-
   const recs = await db
     .select()
     .from(recommendations)
@@ -491,8 +462,6 @@ export async function getRecommendationsByTitle(titleId: string, viewerFriendIds
 // ============ REACTION QUERIES ============
 
 export async function toggleReaction(userId: string, recommendationId: string) {
-  const db = getDb();
-
   // Check if reaction exists
   const existing = await db
     .select()
@@ -522,8 +491,6 @@ export async function toggleReaction(userId: string, recommendationId: string) {
 // ============ COMMENT QUERIES ============
 
 export async function getCommentsByRecommendation(recommendationId: string) {
-  const db = getDb();
-
   const commentsList = await db
     .select()
     .from(comments)
@@ -545,7 +512,6 @@ export async function getCommentsByRecommendation(recommendationId: string) {
 }
 
 export async function createComment(userId: string, recommendationId: string, content: string) {
-  const db = getDb();
   const result = await db.insert(comments).values({
     userId,
     recommendationId,
@@ -557,7 +523,6 @@ export async function createComment(userId: string, recommendationId: string, co
 // ============ WATCH STATUS QUERIES ============
 
 export async function getWatchStatus(userId: string, titleId: string) {
-  const db = getDb();
   const result = await db
     .select()
     .from(watchStatus)
@@ -572,8 +537,6 @@ export async function getWatchStatus(userId: string, titleId: string) {
 }
 
 export async function getWatchlistByStatus(userId: string, status: "saved" | "watching" | "watched") {
-  const db = getDb();
-
   const statuses = await db
     .select()
     .from(watchStatus)
@@ -600,8 +563,6 @@ export async function getWatchlistByStatus(userId: string, status: "saved" | "wa
 }
 
 export async function upsertWatchStatus(data: NewWatchStatus) {
-  const db = getDb();
-
   // Check if exists
   const existing = await getWatchStatus(data.userId, data.titleId);
 
@@ -619,7 +580,6 @@ export async function upsertWatchStatus(data: NewWatchStatus) {
 }
 
 export async function deleteWatchStatus(userId: string, titleId: string) {
-  const db = getDb();
   return db.delete(watchStatus).where(
     and(
       eq(watchStatus.userId, userId),
@@ -629,8 +589,6 @@ export async function deleteWatchStatus(userId: string, titleId: string) {
 }
 
 export async function getTitlePageData(titleId: string, userId: string, friendIds: string[]) {
-  const db = getDb();
-
   const visibleUserIds = [userId, ...friendIds];
 
   // Get recommendations for this title
@@ -716,8 +674,6 @@ export async function getTitlePageData(titleId: string, userId: string, friendId
 }
 
 export async function getAllWatchStatusesWithTitles(userId: string) {
-  const db = getDb();
-
   const statuses = await db
     .select()
     .from(watchStatus)
@@ -779,8 +735,6 @@ export async function getAllWatchStatusesWithTitles(userId: string) {
 // ============ STATS QUERIES ============
 
 export async function getUserStats(userId: string) {
-  const db = getDb();
-
   const [recsResult, friendsResult, watchedResult] = await Promise.all([
     db.select({ count: sql<number>`count(*)::int` })
       .from(recommendations)
