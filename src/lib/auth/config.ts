@@ -19,13 +19,40 @@ export const authConfig: AuthOptions = {
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT),
+        port: Number(process.env.EMAIL_SERVER_PORT || "587"),
         auth: {
           user: process.env.EMAIL_SERVER_USER,
           pass: process.env.EMAIL_SERVER_PASSWORD,
         },
+        secure: Number(process.env.EMAIL_SERVER_PORT) === 465,
       },
       from: process.env.EMAIL_FROM,
+      // Add debug logging
+      sendVerificationRequest: async ({ identifier, url, provider }) => {
+        const nodemailer = await import("nodemailer");
+        const transport = nodemailer.createTransport(provider.server);
+
+        try {
+          await transport.sendMail({
+            to: identifier,
+            from: provider.from,
+            subject: "Sign in to rcmndo",
+            text: `Sign in to rcmndo\n\nClick this link to sign in:\n${url}\n\nIf you didn't request this, you can ignore this email.`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
+                <h2 style="color: #7c3aed;">Sign in to rcmndo</h2>
+                <p>Click the button below to sign in:</p>
+                <a href="${url}" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Sign in</a>
+                <p style="color: #666; font-size: 14px;">If you didn't request this, you can ignore this email.</p>
+              </div>
+            `,
+          });
+          console.log("Email sent successfully to:", identifier);
+        } catch (error) {
+          console.error("Email send error:", error);
+          throw error;
+        }
+      },
     }),
   ],
   pages: {
