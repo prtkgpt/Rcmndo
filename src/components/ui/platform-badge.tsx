@@ -39,8 +39,8 @@ const platformConfig: Record<
   },
   apple: {
     label: "Apple TV+",
-    color: "text-gray-300",
-    bgColor: "bg-gray-300/10",
+    color: "text-gray-600",
+    bgColor: "bg-gray-100",
   },
   peacock: {
     label: "Peacock",

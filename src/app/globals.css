@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0a0a0a;
-  --color-foreground: #fafafa;
-  --color-primary: #8b5cf6;
-  --color-primary-hover: #7c3aed;
-  --color-secondary: #27272a;
-  --color-muted: #71717a;
-  --color-border: #27272a;
-  --color-card: #18181b;
-  --color-card-hover: #27272a;
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  --color-background: #ffffff;
+  --color-foreground: #222222;
+  --color-primary: #FF385C;
+  --color-primary-hover: #E31C5F;
+  --color-secondary: #F7F7F7;
+  --color-muted: #717171;
+  --color-border: #DDDDDD;
+  --color-card: #ffffff;
+  --color-card-hover: #F7F7F7;
+  --color-success: #008A05;
+  --color-warning: #E07912;
+  --color-error: #C13515;
 }
 
 body {
@@ -21,7 +21,7 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Custom scrollbar for dark mode */
+/* Subtle scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -32,12 +32,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-muted);
+  background: var(--color-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  background: var(--color-muted);
 }
 
 /* Smooth scroll behavior */

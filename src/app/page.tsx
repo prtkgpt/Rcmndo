@@ -11,30 +11,23 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] overflow-hidden">
-      {/* Gradient background effects */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px]" />
-        <div className="absolute top-1/3 -left-40 w-96 h-96 bg-pink-500/20 rounded-full blur-[128px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[128px]" />
-      </div>
-
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="relative z-50 border-b border-white/5">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+          <Link href="/" className="text-2xl font-bold text-[#FF385C]">
             rcmndo
           </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="px-4 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-white/90 transition-all"
+              className="px-5 py-2.5 text-sm font-semibold bg-[#FF385C] text-white rounded-lg hover:bg-[#E31C5F] transition-all shadow-sm"
             >
               Sign up
             </Link>
@@ -43,57 +36,53 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-white/60 mb-8">
+      <section className="relative pt-20 pb-24 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-rose-50/80 to-white pointer-events-none" />
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 border border-rose-100 rounded-full text-sm text-[#FF385C] font-medium mb-8">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF385C] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF385C]"></span>
             </span>
-            Now in beta — join free
+            Now in beta &mdash; join free
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-            Stop asking
+          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 leading-[1.08] tracking-tight">
+            Stop scrolling.
             <br />
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
-              &quot;what should I watch?&quot;
+            <span className="text-[#FF385C]">
+              Start watching.
             </span>
           </h1>
 
-          <p className="text-xl text-white/50 max-w-xl mx-auto mb-10 leading-relaxed">
-            Get movie and TV recommendations from your actual friends.
-            No algorithms. No strangers. Just people who know your taste.
+          <p className="text-xl text-gray-500 max-w-xl mx-auto mb-10 leading-relaxed">
+            Get movie and TV recommendations from people you actually trust &mdash;
+            your friends. No algorithms. No strangers.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/signup"
-              className="group px-8 py-4 text-lg font-semibold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white rounded-full hover:opacity-90 transition-all shadow-[0_0_40px_rgba(168,85,247,0.4)]"
+              className="group px-8 py-4 text-lg font-semibold bg-[#FF385C] text-white rounded-xl hover:bg-[#E31C5F] transition-all shadow-lg shadow-rose-200"
             >
               Get started free
-              <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+              <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">&rarr;</span>
             </Link>
             <Link
               href="/login"
-              className="px-8 py-4 text-lg font-semibold text-white bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all"
+              className="px-8 py-4 text-lg font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
             >
               I have an account
             </Link>
           </div>
         </div>
-
-        {/* Floating elements */}
-        <div className="hidden md:block absolute top-32 left-20 text-4xl animate-bounce" style={{ animationDuration: '3s' }}>🍿</div>
-        <div className="hidden md:block absolute top-48 right-24 text-4xl animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}>🎬</div>
-        <div className="hidden md:block absolute bottom-20 left-32 text-4xl animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}>📺</div>
       </section>
 
       {/* Social proof */}
-      <section className="relative py-12 px-4 border-y border-white/5">
+      <section className="py-12 px-4 border-y border-gray-100 bg-gray-50/50">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-white/40 text-sm uppercase tracking-widest mb-6">Trusted by people who hate scrolling Netflix</p>
-          <div className="flex flex-wrap justify-center gap-8 text-white/20 text-2xl font-bold">
+          <p className="text-gray-400 text-sm uppercase tracking-widest mb-6">Works with your favorite platforms</p>
+          <div className="flex flex-wrap justify-center gap-8 text-gray-300 text-2xl font-bold">
             <span>Netflix</span>
             <span>HBO</span>
             <span>Prime</span>
@@ -104,14 +93,14 @@ export default async function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="relative py-24 px-4">
+      <section className="py-24 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-purple-400 text-sm font-semibold uppercase tracking-widest mb-4">How it works</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-white">
+            <p className="text-[#FF385C] text-sm font-semibold uppercase tracking-widest mb-4">How it works</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
               Three steps to your
               <br />
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">next favorite show</span>
+              next favorite show
             </h2>
           </div>
 
@@ -121,11 +110,11 @@ export default async function LandingPage() {
               { num: "02", title: "Share what slaps", desc: "Recommend shows you loved. Add notes like \"watch this immediately\" or \"skip episode 4\".", icon: "🔥" },
               { num: "03", title: "Discover gold", desc: "Your feed shows only recs from friends. No sponsored content. No algorithm noise.", icon: "✨" },
             ].map((step) => (
-              <div key={step.num} className="group relative p-8 rounded-3xl bg-gradient-to-b from-white/5 to-transparent border border-white/5 hover:border-white/20 transition-all">
+              <div key={step.num} className="group relative p-8 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all">
                 <div className="text-5xl mb-4">{step.icon}</div>
-                <div className="text-purple-400 text-sm font-mono mb-2">{step.num}</div>
-                <h3 className="text-xl font-semibold text-white mb-3">{step.title}</h3>
-                <p className="text-white/50 leading-relaxed">{step.desc}</p>
+                <div className="text-[#FF385C] text-sm font-mono font-semibold mb-2">{step.num}</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">{step.title}</h3>
+                <p className="text-gray-500 leading-relaxed">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -133,44 +122,44 @@ export default async function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="relative py-24 px-4">
+      <section className="py-24 px-4 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-pink-400 text-sm font-semibold uppercase tracking-widest mb-4">Features</p>
-            <h2 className="text-4xl md:text-5xl font-bold text-white">
+            <p className="text-[#FF385C] text-sm font-semibold uppercase tracking-widest mb-4">Features</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900">
               Built different
             </h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="p-8 rounded-3xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20">
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Friends-only feed</h3>
-              <p className="text-white/50 leading-relaxed">
+            <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-rose-50 flex items-center justify-center text-2xl mb-4">🎯</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Friends-only feed</h3>
+              <p className="text-gray-500 leading-relaxed">
                 No influencers. No ads. No &quot;because you watched...&quot; suggestions from a robot. Just your people.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-gradient-to-br from-pink-500/10 to-transparent border border-pink-500/20">
-              <div className="text-4xl mb-4">📍</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Where to watch</h3>
-              <p className="text-white/50 leading-relaxed">
+            <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-2xl mb-4">📍</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Where to watch</h3>
+              <p className="text-gray-500 leading-relaxed">
                 See which streaming service has it. Stop opening 5 apps to find where that show lives.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20">
-              <div className="text-4xl mb-4">📝</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Personal notes</h3>
-              <p className="text-white/50 leading-relaxed">
+            <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-2xl mb-4">📝</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Personal notes</h3>
+              <p className="text-gray-500 leading-relaxed">
                 &quot;The first 3 episodes are slow but trust me.&quot; Context that actually helps.
               </p>
             </div>
 
-            <div className="p-8 rounded-3xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20">
-              <div className="text-4xl mb-4">💬</div>
-              <h3 className="text-xl font-semibold text-white mb-3">React & discuss</h3>
-              <p className="text-white/50 leading-relaxed">
+            <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center text-2xl mb-4">💬</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">React & discuss</h3>
+              <p className="text-gray-500 leading-relaxed">
                 Watched something your friend recommended? Let them know. Start the conversation.
               </p>
             </div>
@@ -179,21 +168,21 @@ export default async function LandingPage() {
       </section>
 
       {/* Testimonial */}
-      <section className="relative py-24 px-4">
+      <section className="py-24 px-4">
         <div className="max-w-3xl mx-auto">
-          <div className="relative p-12 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10">
-            <div className="absolute -top-4 left-12 text-6xl text-purple-400/50">&ldquo;</div>
-            <p className="text-2xl md:text-3xl text-white font-medium mb-8 leading-relaxed">
+          <div className="relative p-10 md:p-12 rounded-2xl bg-rose-50 border border-rose-100">
+            <div className="absolute -top-4 left-10 text-6xl text-[#FF385C]/30">&ldquo;</div>
+            <p className="text-2xl md:text-3xl text-gray-900 font-medium mb-8 leading-relaxed">
               I used to spend 30 minutes browsing Netflix, give up, and rewatch The Office.
               Now I actually watch new stuff because my friends have good taste.
             </p>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
+              <div className="w-12 h-12 rounded-full bg-[#FF385C] flex items-center justify-center text-white font-bold">
                 E
               </div>
               <div>
-                <p className="text-white font-semibold">Everyone</p>
-                <p className="text-white/50 text-sm">Literally everyone with streaming</p>
+                <p className="text-gray-900 font-semibold">Everyone</p>
+                <p className="text-gray-500 text-sm">Literally everyone with streaming</p>
               </div>
             </div>
           </div>
@@ -201,39 +190,37 @@ export default async function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-24 px-4">
+      <section className="py-24 px-4 bg-gray-900">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to actually
             <br />
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
-              watch something good?
-            </span>
+            watch something good?
           </h2>
-          <p className="text-xl text-white/50 mb-10">
+          <p className="text-xl text-gray-400 mb-10">
             Join rcmndo. It&apos;s free. Your friends are waiting.
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold bg-white text-black rounded-full hover:bg-white/90 transition-all"
+            className="inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold bg-[#FF385C] text-white rounded-xl hover:bg-[#E31C5F] transition-all shadow-lg"
           >
             Create your account
-            <span>→</span>
+            <span>&rarr;</span>
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative py-12 px-4 border-t border-white/5">
+      <footer className="py-12 px-4 border-t border-gray-100">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">rcmndo</span>
-            <span className="text-white/30">•</span>
-            <span className="text-white/30 text-sm">recs from friends</span>
+            <span className="text-xl font-bold text-[#FF385C]">rcmndo</span>
+            <span className="text-gray-300">&middot;</span>
+            <span className="text-gray-400 text-sm">recs from friends</span>
           </div>
-          <div className="flex items-center gap-8 text-sm text-white/30">
-            <Link href="/login" className="hover:text-white transition-colors">Log in</Link>
-            <Link href="/signup" className="hover:text-white transition-colors">Sign up</Link>
+          <div className="flex items-center gap-8 text-sm text-gray-400">
+            <Link href="/login" className="hover:text-gray-900 transition-colors">Log in</Link>
+            <Link href="/signup" className="hover:text-gray-900 transition-colors">Sign up</Link>
           </div>
         </div>
       </footer>
