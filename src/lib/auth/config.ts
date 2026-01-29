@@ -1,4 +1,5 @@
 import EmailProvider from "next-auth/providers/email";
+import GoogleProvider from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
@@ -16,6 +17,15 @@ export const authConfig: AuthOptions = {
     strategy: "jwt",
   },
   providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
@@ -27,7 +37,6 @@ export const authConfig: AuthOptions = {
         secure: Number(process.env.EMAIL_SERVER_PORT) === 465,
       },
       from: process.env.EMAIL_FROM,
-      // Add debug logging
       sendVerificationRequest: async ({ identifier, url, provider }) => {
         const nodemailer = await import("nodemailer");
         const transport = nodemailer.createTransport(provider.server);
@@ -40,9 +49,9 @@ export const authConfig: AuthOptions = {
             text: `Sign in to rcmndo\n\nClick this link to sign in:\n${url}\n\nIf you didn't request this, you can ignore this email.`,
             html: `
               <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
-                <h2 style="color: #7c3aed;">Sign in to rcmndo</h2>
+                <h2 style="color: #FF385C;">Sign in to rcmndo</h2>
                 <p>Click the button below to sign in:</p>
-                <a href="${url}" style="display: inline-block; background: #7c3aed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Sign in</a>
+                <a href="${url}" style="display: inline-block; background: #FF385C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">Sign in</a>
                 <p style="color: #666; font-size: 14px;">If you didn't request this, you can ignore this email.</p>
               </div>
             `,
