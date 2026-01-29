@@ -312,6 +312,33 @@ export const watchStatus = pgTable(
   })
 );
 
+// Suggestions table (recommend a title to a specific friend)
+export const suggestions = pgTable(
+  "suggestions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    senderId: uuid("sender_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    recipientId: uuid("recipient_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    titleId: uuid("title_id")
+      .notNull()
+      .references(() => titles.id, { onDelete: "cascade" }),
+    note: text("note"),
+    seenAt: timestamp("seen_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    senderIdx: index("idx_suggestions_sender").on(table.senderId),
+    recipientIdx: index("idx_suggestions_recipient").on(table.recipientId),
+    titleIdx: index("idx_suggestions_title").on(table.titleId),
+  })
+);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
@@ -323,6 +350,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   reactions: many(reactions),
   comments: many(comments),
   watchStatuses: many(watchStatus),
+  sentSuggestions: many(suggestions, { relationName: "sender" }),
+  receivedSuggestions: many(suggestions, { relationName: "recipient" }),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -366,6 +395,7 @@ export const inviteLinksRelations = relations(inviteLinks, ({ one }) => ({
 export const titlesRelations = relations(titles, ({ many }) => ({
   recommendations: many(recommendations),
   watchStatuses: many(watchStatus),
+  suggestions: many(suggestions),
 }));
 
 export const recommendationsRelations = relations(
@@ -417,6 +447,23 @@ export const watchStatusRelations = relations(watchStatus, ({ one }) => ({
   }),
 }));
 
+export const suggestionsRelations = relations(suggestions, ({ one }) => ({
+  sender: one(users, {
+    fields: [suggestions.senderId],
+    references: [users.id],
+    relationName: "sender",
+  }),
+  recipient: one(users, {
+    fields: [suggestions.recipientId],
+    references: [users.id],
+    relationName: "recipient",
+  }),
+  title: one(titles, {
+    fields: [suggestions.titleId],
+    references: [titles.id],
+  }),
+}));
+
 // Type exports
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
@@ -440,3 +487,5 @@ export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type WatchStatus = typeof watchStatus.$inferSelect;
 export type NewWatchStatus = typeof watchStatus.$inferInsert;
+export type Suggestion = typeof suggestions.$inferSelect;
+export type NewSuggestion = typeof suggestions.$inferInsert;

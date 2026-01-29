@@ -14,7 +14,9 @@ import {
   CheckIcon,
   ClockIcon,
   XMarkIcon,
+  SendIcon,
 } from "@/components/ui/icons";
+import { SuggestModal } from "@/components/ui/suggest-modal";
 import type { Platform, WatchStatusType, TitleType } from "@/types/database";
 
 interface WatchlistItem {
@@ -46,6 +48,7 @@ export function WatchlistContent({
   const [items, setItems] = useState(initialItems);
   const [statusFilter, setStatusFilter] = useState<FilterType>("all");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [suggestItem, setSuggestItem] = useState<{ id: string; name: string } | null>(null);
 
   const filteredItems = items.filter((item) => {
     if (statusFilter !== "all" && item.status !== statusFilter) return false;
@@ -250,6 +253,13 @@ export function WatchlistContent({
                       <CheckIcon className="w-4 h-4" />
                     </button>
                     <button
+                      onClick={() => setSuggestItem({ id: item.title.id, name: item.title.name })}
+                      className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Suggest to a friend"
+                    >
+                      <SendIcon className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => handleRemove(item.id, item.title.id)}
                       className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors ml-auto"
                       title="Remove from watchlist"
@@ -263,6 +273,15 @@ export function WatchlistContent({
           </div>
         )}
       </div>
+
+      {suggestItem && (
+        <SuggestModal
+          titleId={suggestItem.id}
+          titleName={suggestItem.name}
+          isOpen={!!suggestItem}
+          onClose={() => setSuggestItem(null)}
+        />
+      )}
     </div>
   );
 }

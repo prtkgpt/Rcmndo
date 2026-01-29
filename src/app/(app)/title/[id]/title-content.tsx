@@ -20,7 +20,9 @@ import {
   TvIcon,
   LinkIcon,
   PlusIcon,
+  SendIcon,
 } from "@/components/ui/icons";
+import { SuggestModal } from "@/components/ui/suggest-modal";
 import { formatDistanceToNow } from "@/lib/utils";
 import type { Title, Platform, WatchStatusType } from "@/types/database";
 
@@ -77,6 +79,7 @@ export function TitleContent({
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [showSuggestModal, setShowSuggestModal] = useState(false);
 
   const handleSave = async () => {
     if (watchStatus === "saved") {
@@ -274,6 +277,21 @@ export function TitleContent({
               Recommend This
             </Button>
           </Link>
+        )}
+
+        {/* Suggest to friend button */}
+        <Button variant="secondary" className="w-full mb-6" onClick={() => setShowSuggestModal(true)}>
+          <SendIcon className="w-4 h-4 mr-1.5" />
+          Suggest to a Friend
+        </Button>
+
+        {showSuggestModal && (
+          <SuggestModal
+            titleId={title.id}
+            titleName={title.name}
+            isOpen={showSuggestModal}
+            onClose={() => setShowSuggestModal(false)}
+          />
         )}
 
         {/* Recommendations */}
