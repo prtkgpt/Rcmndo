@@ -11,23 +11,30 @@ export default async function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0a0a0a] overflow-hidden">
+      {/* Gradient background effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px]" />
+        <div className="absolute top-1/3 -left-40 w-96 h-96 bg-pink-500/20 rounded-full blur-[128px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[128px]" />
+      </div>
+
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <header className="relative z-50 border-b border-white/5">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-primary">
+          <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
             rcmndo
           </Link>
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+              className="px-4 py-2 text-sm font-medium bg-white text-black rounded-full hover:bg-white/90 transition-all"
             >
               Sign up
             </Link>
@@ -36,171 +43,197 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="relative pt-24 pb-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-            Get recommendations from
-            <span className="text-primary"> friends you trust</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-sm text-white/60 mb-8">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            Now in beta — join free
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
+            Stop asking
+            <br />
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+              &quot;what should I watch?&quot;
+            </span>
           </h1>
-          <p className="text-xl text-muted max-w-2xl mx-auto mb-10">
-            Stop scrolling through endless streaming catalogs. Share what you&apos;re watching
-            and discover your next favorite show from people who actually know your taste.
+
+          <p className="text-xl text-white/50 max-w-xl mx-auto mb-10 leading-relaxed">
+            Get movie and TV recommendations from your actual friends.
+            No algorithms. No strangers. Just people who know your taste.
           </p>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/signup"
-              className="px-8 py-4 text-lg font-semibold bg-primary text-white rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/25"
+              className="group px-8 py-4 text-lg font-semibold bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 text-white rounded-full hover:opacity-90 transition-all shadow-[0_0_40px_rgba(168,85,247,0.4)]"
             >
-              Get Started Free
+              Get started free
+              <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
             </Link>
             <Link
               href="/login"
-              className="px-8 py-4 text-lg font-semibold bg-secondary text-foreground rounded-xl border border-border hover:bg-card-hover transition-colors"
+              className="px-8 py-4 text-lg font-semibold text-white bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all"
             >
               I have an account
             </Link>
           </div>
         </div>
+
+        {/* Floating elements */}
+        <div className="hidden md:block absolute top-32 left-20 text-4xl animate-bounce" style={{ animationDuration: '3s' }}>🍿</div>
+        <div className="hidden md:block absolute top-48 right-24 text-4xl animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }}>🎬</div>
+        <div className="hidden md:block absolute bottom-20 left-32 text-4xl animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}>📺</div>
+      </section>
+
+      {/* Social proof */}
+      <section className="relative py-12 px-4 border-y border-white/5">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-white/40 text-sm uppercase tracking-widest mb-6">Trusted by people who hate scrolling Netflix</p>
+          <div className="flex flex-wrap justify-center gap-8 text-white/20 text-2xl font-bold">
+            <span>Netflix</span>
+            <span>HBO</span>
+            <span>Prime</span>
+            <span>Disney+</span>
+            <span>Apple TV+</span>
+          </div>
+        </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-20 px-4 bg-card">
+      <section className="relative py-24 px-4">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">How it works</h2>
-          <p className="text-muted text-center mb-12 max-w-xl mx-auto">
-            Three simple steps to never wonder what to watch again
-          </p>
+          <div className="text-center mb-16">
+            <p className="text-purple-400 text-sm font-semibold uppercase tracking-widest mb-4">How it works</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-white">
+              Three steps to your
+              <br />
+              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">next favorite show</span>
+            </h2>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">1</span>
+            {[
+              { num: "01", title: "Add your friends", desc: "Invite people whose taste you trust. That friend who always knows what's good? Yeah, them.", icon: "👯" },
+              { num: "02", title: "Share what slaps", desc: "Recommend shows you loved. Add notes like \"watch this immediately\" or \"skip episode 4\".", icon: "🔥" },
+              { num: "03", title: "Discover gold", desc: "Your feed shows only recs from friends. No sponsored content. No algorithm noise.", icon: "✨" },
+            ].map((step) => (
+              <div key={step.num} className="group relative p-8 rounded-3xl bg-gradient-to-b from-white/5 to-transparent border border-white/5 hover:border-white/20 transition-all">
+                <div className="text-5xl mb-4">{step.icon}</div>
+                <div className="text-purple-400 text-sm font-mono mb-2">{step.num}</div>
+                <h3 className="text-xl font-semibold text-white mb-3">{step.title}</h3>
+                <p className="text-white/50 leading-relaxed">{step.desc}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Connect with friends</h3>
-              <p className="text-muted">
-                Invite your friends or find them by username. Build your circle of trusted recommenders.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">2</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Share what you love</h3>
-              <p className="text-muted">
-                Recommend movies and shows you&apos;ve enjoyed. Add notes about why it&apos;s worth watching.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-primary">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Discover your next watch</h3>
-              <p className="text-muted">
-                Browse your personalized feed of recommendations from people who get you.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-20 px-4">
+      <section className="relative py-24 px-4">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">Why rcmndo?</h2>
-          <p className="text-muted text-center mb-12 max-w-xl mx-auto">
-            Built for people tired of algorithm-driven recommendations
-          </p>
+          <div className="text-center mb-16">
+            <p className="text-pink-400 text-sm font-semibold uppercase tracking-widest mb-4">Features</p>
+            <h2 className="text-4xl md:text-5xl font-bold text-white">
+              Built different
+            </h2>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="p-6 rounded-2xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Friends-only feed</h3>
-              <p className="text-muted">
-                No strangers, no influencers, no sponsored content. Just genuine recommendations from people in your life.
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20">
+              <div className="text-4xl mb-4">🎯</div>
+              <h3 className="text-xl font-semibold text-white mb-3">Friends-only feed</h3>
+              <p className="text-white/50 leading-relaxed">
+                No influencers. No ads. No &quot;because you watched...&quot; suggestions from a robot. Just your people.
               </p>
             </div>
-            <div className="p-6 rounded-2xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Know where to watch</h3>
-              <p className="text-muted">
-                See which streaming platform has each title. No more searching across five apps to find a show.
+
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-pink-500/10 to-transparent border border-pink-500/20">
+              <div className="text-4xl mb-4">📍</div>
+              <h3 className="text-xl font-semibold text-white mb-3">Where to watch</h3>
+              <p className="text-white/50 leading-relaxed">
+                See which streaming service has it. Stop opening 5 apps to find where that show lives.
               </p>
             </div>
-            <div className="p-6 rounded-2xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Personal watchlist</h3>
-              <p className="text-muted">
-                Save recommendations for later and track what you&apos;ve already watched. Never lose a good suggestion again.
+
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20">
+              <div className="text-4xl mb-4">📝</div>
+              <h3 className="text-xl font-semibold text-white mb-3">Personal notes</h3>
+              <p className="text-white/50 leading-relaxed">
+                &quot;The first 3 episodes are slow but trust me.&quot; Context that actually helps.
               </p>
             </div>
-            <div className="p-6 rounded-2xl bg-card border border-border">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Start conversations</h3>
-              <p className="text-muted">
-                React and comment on recommendations. Share your thoughts after watching something a friend suggested.
+
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20">
+              <div className="text-4xl mb-4">💬</div>
+              <h3 className="text-xl font-semibold text-white mb-3">React & discuss</h3>
+              <p className="text-white/50 leading-relaxed">
+                Watched something your friend recommended? Let them know. Start the conversation.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-20 px-4 bg-card">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="text-6xl mb-6">&#34;</div>
-          <p className="text-2xl text-foreground mb-6 italic">
-            I used to spend 30 minutes scrolling Netflix before giving up. Now I just check what my friends recommended and actually watch something good.
-          </p>
-          <p className="text-muted">
-            — Every person who&apos;s ever used a streaming service
-          </p>
+      {/* Testimonial */}
+      <section className="relative py-24 px-4">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative p-12 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border border-white/10">
+            <div className="absolute -top-4 left-12 text-6xl text-purple-400/50">&ldquo;</div>
+            <p className="text-2xl md:text-3xl text-white font-medium mb-8 leading-relaxed">
+              I used to spend 30 minutes browsing Netflix, give up, and rewatch The Office.
+              Now I actually watch new stuff because my friends have good taste.
+            </p>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
+                E
+              </div>
+              <div>
+                <p className="text-white font-semibold">Everyone</p>
+                <p className="text-white/50 text-sm">Literally everyone with streaming</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to find your next favorite show?</h2>
-          <p className="text-xl text-muted mb-8">
-            Join rcmndo and start getting recommendations that actually matter.
+      <section className="relative py-24 px-4">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to actually
+            <br />
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+              watch something good?
+            </span>
+          </h2>
+          <p className="text-xl text-white/50 mb-10">
+            Join rcmndo. It&apos;s free. Your friends are waiting.
           </p>
           <Link
             href="/signup"
-            className="inline-block px-8 py-4 text-lg font-semibold bg-primary text-white rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/25"
+            className="inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold bg-white text-black rounded-full hover:bg-white/90 transition-all"
           >
-            Create your free account
+            Create your account
+            <span>→</span>
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 border-t border-border">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-primary">rcmndo</span>
-            <span className="text-muted">— recommendations from friends</span>
+      <footer className="relative py-12 px-4 border-t border-white/5">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">rcmndo</span>
+            <span className="text-white/30">•</span>
+            <span className="text-white/30 text-sm">recs from friends</span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-muted">
-            <Link href="/login" className="hover:text-foreground transition-colors">
-              Log in
-            </Link>
-            <Link href="/signup" className="hover:text-foreground transition-colors">
-              Sign up
-            </Link>
+          <div className="flex items-center gap-8 text-sm text-white/30">
+            <Link href="/login" className="hover:text-white transition-colors">Log in</Link>
+            <Link href="/signup" className="hover:text-white transition-colors">Sign up</Link>
           </div>
         </div>
       </footer>
