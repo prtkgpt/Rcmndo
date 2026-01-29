@@ -7,7 +7,7 @@ import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SearchIcon, FilmIcon, TvIcon } from "@/components/ui/icons";
+import { SearchIcon, FilmIcon, TvIcon, StarIcon } from "@/components/ui/icons";
 import type { NormalizedTitle } from "@/lib/tmdb";
 
 type FilterType = "all" | "movie" | "tv";
@@ -140,6 +140,14 @@ export default function SearchPage() {
                       {title.year && `${title.year} · `}
                       {title.type === "movie" ? "Movie" : "TV Show"}
                     </p>
+                    {title.vote_average != null && title.vote_average > 0 && (
+                      <div className="flex items-center gap-1 mt-1.5">
+                        <StarIcon className="w-3.5 h-3.5 text-amber-500" />
+                        <span className="text-xs font-medium text-amber-700">
+                          {title.vote_average.toFixed(1)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </Card>
               </Link>

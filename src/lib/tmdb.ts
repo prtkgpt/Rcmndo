@@ -29,6 +29,7 @@ export interface NormalizedTitle {
   poster_url: string | null;
   backdrop_url: string | null;
   overview: string | null;
+  vote_average: number | null;
 }
 
 function getApiKey(): string {
@@ -135,6 +136,7 @@ export async function getMovieDetails(tmdbId: number): Promise<NormalizedTitle |
     poster_url: getPosterUrl(data.poster_path),
     backdrop_url: getBackdropUrl(data.backdrop_path),
     overview: data.overview || null,
+    vote_average: data.vote_average ?? null,
   };
 }
 
@@ -158,6 +160,7 @@ export async function getTVDetails(tmdbId: number): Promise<NormalizedTitle | nu
     poster_url: getPosterUrl(data.poster_path),
     backdrop_url: getBackdropUrl(data.backdrop_path),
     overview: data.overview || null,
+    vote_average: data.vote_average ?? null,
   };
 }
 
@@ -173,5 +176,6 @@ function normalizeSearchResult(item: TMDBSearchResult): NormalizedTitle {
     poster_url: getPosterUrl(item.poster_path),
     backdrop_url: getBackdropUrl(item.backdrop_path),
     overview: item.overview || null,
+    vote_average: item.vote_average ?? null,
   };
 }
