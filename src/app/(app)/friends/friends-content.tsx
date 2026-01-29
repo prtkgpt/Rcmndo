@@ -276,13 +276,13 @@ export function FriendsContent({
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleAcceptRequest(request.friendshipId)}
-                      className="p-2 bg-success/20 text-success rounded-lg hover:bg-success/30 transition-colors"
+                      className="p-2.5 bg-success/20 text-success rounded-lg hover:bg-success/30 transition-colors"
                     >
                       <CheckIcon className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleRejectRequest(request.friendshipId)}
-                      className="p-2 bg-error/20 text-error rounded-lg hover:bg-error/30 transition-colors"
+                      className="p-2.5 bg-error/20 text-error rounded-lg hover:bg-error/30 transition-colors"
                     >
                       <XMarkIcon className="w-5 h-5" />
                     </button>

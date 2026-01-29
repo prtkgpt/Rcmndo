@@ -156,11 +156,11 @@ export function RecommendationCard({
       </Link>
 
       {/* Actions */}
-      <div className="flex items-center justify-between px-4 py-3 mt-2 border-t border-border">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between px-2 py-1 mt-2 border-t border-border">
+        <div className="flex items-center gap-1">
           <button
             onClick={handleLike}
-            className={`flex items-center gap-1.5 transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg transition-colors ${
               isLiked ? "text-red-500" : "text-muted hover:text-foreground"
             }`}
           >
@@ -174,7 +174,7 @@ export function RecommendationCard({
 
           <Link
             href={`/title/${titleId}?comments=true`}
-            className="flex items-center gap-1.5 text-muted hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-muted hover:text-foreground transition-colors"
           >
             <ChatBubbleIcon className="w-5 h-5" />
             {commentCount > 0 && (
@@ -183,10 +183,10 @@ export function RecommendationCard({
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1">
           <button
             onClick={handleWatched}
-            className={`p-1 transition-colors ${
+            className={`p-2.5 rounded-lg transition-colors ${
               isWatched ? "text-success" : "text-muted hover:text-foreground"
             }`}
             title={isWatched ? "Marked as watched" : "Mark as watched"}
@@ -196,7 +196,7 @@ export function RecommendationCard({
 
           <button
             onClick={handleSave}
-            className={`p-1 transition-colors ${
+            className={`p-2.5 rounded-lg transition-colors ${
               isSaved ? "text-primary" : "text-muted hover:text-foreground"
             }`}
             title={isSaved ? "Saved to watchlist" : "Save to watchlist"}

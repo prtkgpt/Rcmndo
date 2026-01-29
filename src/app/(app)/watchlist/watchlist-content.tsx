@@ -211,7 +211,7 @@ export function WatchlistContent({
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-1 mt-2">
                     <button
                       onClick={() =>
                         handleStatusChange(
@@ -220,7 +220,7 @@ export function WatchlistContent({
                           item.status === "saved" ? "watching" : "saved"
                         )
                       }
-                      className={`p-1.5 rounded-lg transition-colors ${
+                      className={`p-2.5 rounded-lg transition-colors ${
                         item.status === "watching"
                           ? "bg-warning/20 text-warning"
                           : "text-muted hover:text-foreground hover:bg-secondary"
@@ -231,7 +231,7 @@ export function WatchlistContent({
                           : "Mark as watching"
                       }
                     >
-                      <ClockIcon className="w-4 h-4" />
+                      <ClockIcon className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() =>
@@ -241,7 +241,7 @@ export function WatchlistContent({
                           item.status === "watched" ? "saved" : "watched"
                         )
                       }
-                      className={`p-1.5 rounded-lg transition-colors ${
+                      className={`p-2.5 rounded-lg transition-colors ${
                         item.status === "watched"
                           ? "bg-success/20 text-success"
                           : "text-muted hover:text-foreground hover:bg-secondary"
@@ -250,21 +250,21 @@ export function WatchlistContent({
                         item.status === "watched" ? "Watched" : "Mark as watched"
                       }
                     >
-                      <CheckIcon className="w-4 h-4" />
+                      <CheckIcon className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => setSuggestItem({ id: item.title.id, name: item.title.name })}
-                      className="p-1.5 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                      className="p-2.5 rounded-lg text-muted hover:text-primary hover:bg-primary/10 transition-colors"
                       title="Suggest to a friend"
                     >
-                      <SendIcon className="w-4 h-4" />
+                      <SendIcon className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => handleRemove(item.id, item.title.id)}
-                      className="p-1.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors ml-auto"
+                      className="p-2.5 rounded-lg text-muted hover:text-error hover:bg-error/10 transition-colors ml-auto"
                       title="Remove from watchlist"
                     >
-                      <XMarkIcon className="w-4 h-4" />
+                      <XMarkIcon className="w-5 h-5" />
                     </button>
                   </div>
                 </div>

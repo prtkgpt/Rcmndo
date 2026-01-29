@@ -195,7 +195,7 @@ export function TitleContent({
       <div className="px-4 py-4">
         {/* Title header */}
         <div className="flex gap-4 mb-6">
-          <div className="relative w-28 h-[168px] flex-shrink-0 rounded-xl overflow-hidden bg-secondary">
+          <div className="relative w-24 sm:w-28 h-36 sm:h-[168px] flex-shrink-0 rounded-xl overflow-hidden bg-secondary">
             {title.posterUrl ? (
               <Image
                 src={title.posterUrl}
@@ -359,10 +359,10 @@ export function TitleContent({
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center gap-4 pt-3 border-t border-border">
+                  <div className="flex items-center gap-1 pt-2 border-t border-border -mx-1">
                     <button
                       onClick={() => handleLike(rec.id, rec.userHasLiked)}
-                      className={`flex items-center gap-1.5 transition-colors ${
+                      className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg transition-colors ${
                         rec.userHasLiked
                           ? "text-red-500"
                           : "text-muted hover:text-foreground"
@@ -384,7 +384,7 @@ export function TitleContent({
                           expandedComments === rec.id ? null : rec.id
                         )
                       }
-                      className="flex items-center gap-1.5 text-muted hover:text-foreground transition-colors"
+                      className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-muted hover:text-foreground transition-colors"
                     >
                       <ChatBubbleIcon className="w-5 h-5" />
                       {rec.comments.length > 0 && (

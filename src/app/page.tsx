@@ -211,7 +211,7 @@ export default async function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t border-gray-100">
+      <footer className="py-12 px-4 pb-safe border-t border-gray-100">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold text-[#FF385C]">rcmndo</span>

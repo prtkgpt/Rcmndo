@@ -89,7 +89,7 @@ export default function SearchPage() {
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
           {(["all", "movie", "tv"] as FilterType[]).map((type) => (
             <button
               key={type}
