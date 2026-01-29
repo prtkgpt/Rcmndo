@@ -47,14 +47,12 @@ function RecommendPageContent() {
       if (tmdbId && titleType && !selectedTitle) {
         setLoadingTitle(true);
         try {
-          // Fetch from our API route which has the API key
           const response = await fetch(
-            `/api/tmdb/search?q=id:${tmdbId}&type=${titleType}`
+            `/api/tmdb/details?id=${tmdbId}&type=${titleType}`
           );
-          const data = await response.json();
-
-          if (data.results?.[0]) {
-            setSelectedTitle(data.results[0]);
+          if (response.ok) {
+            const data = await response.json();
+            setSelectedTitle(data);
           }
         } catch {
           setError("Failed to load title");
