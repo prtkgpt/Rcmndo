@@ -7,7 +7,6 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Spinner, LoadingScreen } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -34,7 +33,7 @@ function RecommendPageContent() {
 
   // Form fields
   const [note, setNote] = useState("");
-  const [platform, setPlatform] = useState("");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [watchUrl, setWatchUrl] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -126,7 +125,7 @@ function RecommendPageContent() {
         body: JSON.stringify({
           title: selectedTitle,
           note: note || null,
-          platform: platform || null,
+          platforms: selectedPlatforms,
           watchUrl: watchUrl || null,
           tags,
         }),
@@ -293,14 +292,51 @@ function RecommendPageContent() {
               rows={3}
             />
 
-            {/* Platform */}
-            <Select
-              label="Where to watch"
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-              options={PLATFORM_OPTIONS}
-              placeholder="Select platform"
-            />
+            {/* Platforms */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Where to watch
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {PLATFORM_OPTIONS.map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
+                      selectedPlatforms.includes(opt.value)
+                        ? "border-primary bg-primary/5 text-foreground"
+                        : "border-border bg-secondary/50 text-muted hover:border-gray-400"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPlatforms.includes(opt.value)}
+                      onChange={() => {
+                        setSelectedPlatforms((prev) =>
+                          prev.includes(opt.value)
+                            ? prev.filter((p) => p !== opt.value)
+                            : [...prev, opt.value]
+                        );
+                      }}
+                      className="sr-only"
+                    />
+                    <span
+                      className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                        selectedPlatforms.includes(opt.value)
+                          ? "border-primary bg-primary"
+                          : "border-gray-400"
+                      }`}
+                    >
+                      {selectedPlatforms.includes(opt.value) && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className="text-sm font-medium">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
             {/* Watch URL */}
             <Input

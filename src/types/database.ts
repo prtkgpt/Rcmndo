@@ -28,6 +28,11 @@ export type Platform =
   | "apple"
   | "peacock"
   | "paramount"
+  | "crunchyroll"
+  | "starz"
+  | "tubi"
+  | "youtube"
+  | "mubi"
   | "other";
 
 // Watch status type
@@ -52,6 +57,7 @@ export interface FeedItem {
   username: string;
   note: string | null;
   platform: Platform | null;
+  platforms: string[];
   tags: string[];
   createdAt: string;
   reactionCount: number;

@@ -20,6 +20,7 @@ interface FeedItem {
   username: string;
   note: string | null;
   platform: Platform | null;
+  platforms: string[];
   tags: string[];
   createdAt: string;
   reactionCount: number;
@@ -45,6 +46,11 @@ const PLATFORM_LABELS: Record<string, string> = {
   apple: "Apple TV+",
   peacock: "Peacock",
   paramount: "Paramount+",
+  crunchyroll: "Crunchyroll",
+  starz: "Starz",
+  tubi: "Tubi",
+  youtube: "YouTube",
+  mubi: "MUBI",
   other: "Other",
 };
 
@@ -54,17 +60,26 @@ export function FeedContent({ initialItems }: FeedContentProps) {
 
   // Get unique platforms from feed for filter chips
   const availablePlatforms = useMemo(() => {
-    const platforms = new Set<string>();
+    const platformSet = new Set<string>();
     initialItems.forEach((item) => {
-      if (item.platform) platforms.add(item.platform);
+      if (item.platforms && item.platforms.length > 0) {
+        item.platforms.forEach((p) => platformSet.add(p));
+      } else if (item.platform) {
+        platformSet.add(item.platform);
+      }
     });
-    return Array.from(platforms).sort();
+    return Array.from(platformSet).sort();
   }, [initialItems]);
 
   const filteredItems = useMemo(() => {
     return initialItems.filter((item) => {
       if (typeFilter !== "all" && item.titleType !== typeFilter) return false;
-      if (platformFilter !== "all" && item.platform !== platformFilter) return false;
+      if (platformFilter !== "all") {
+        const itemPlatforms = (item.platforms && item.platforms.length > 0)
+          ? item.platforms
+          : (item.platform ? [item.platform] : []);
+        if (!itemPlatforms.includes(platformFilter)) return false;
+      }
       return true;
     });
   }, [initialItems, typeFilter, platformFilter]);

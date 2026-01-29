@@ -29,6 +29,7 @@ interface RecommendationCardProps {
   username: string;
   note: string | null;
   platform: Platform | null;
+  platforms: string[];
   tags: string[];
   createdAt: string;
   reactionCount: number;
@@ -42,7 +43,6 @@ interface RecommendationCardProps {
 }
 
 export function RecommendationCard({
-  id,
   titleId,
   posterUrl,
   titleName,
@@ -53,6 +53,7 @@ export function RecommendationCard({
   username,
   note,
   platform,
+  platforms,
   tags,
   createdAt,
   reactionCount,
@@ -134,7 +135,11 @@ export function RecommendationCard({
 
             {/* Platform & Tags */}
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {platform && <PlatformBadge platform={platform} />}
+              {platforms && platforms.length > 0
+                ? platforms.map((p) => (
+                    <PlatformBadge key={p} platform={p as Platform} />
+                  ))
+                : platform && <PlatformBadge platform={platform} />}
               {tags.slice(0, 2).map((tag) => (
                 <span
                   key={tag}

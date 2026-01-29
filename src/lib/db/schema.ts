@@ -206,6 +206,7 @@ export const recommendations = pgTable(
     note: text("note"),
     tags: text("tags").array().default(sql`'{}'::text[]`),
     platform: platformTypeEnum("platform"),
+    platforms: text("platforms").array().default(sql`'{}'::text[]`),
     watchUrl: text("watch_url"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()

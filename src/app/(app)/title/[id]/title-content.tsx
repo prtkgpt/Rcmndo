@@ -32,6 +32,7 @@ interface RecommendationItem {
   note: string | null;
   tags: string[];
   platform: Platform | null;
+  platforms: string[];
   watchUrl: string | null;
   createdAt: string;
   user: {
@@ -323,7 +324,11 @@ export function TitleContent({
                         @{rec.user.username} · {formatDistanceToNow(rec.createdAt)}
                       </p>
                     </div>
-                    {rec.platform && <PlatformBadge platform={rec.platform} />}
+                    {rec.platforms && rec.platforms.length > 0
+                      ? rec.platforms.map((p) => (
+                          <PlatformBadge key={p} platform={p as Platform} />
+                        ))
+                      : rec.platform && <PlatformBadge platform={rec.platform} />}
                   </div>
 
                   {/* Note */}

@@ -3,7 +3,9 @@ import { auth } from "@/lib/auth";
 import { getOrCreateTitle, createRecommendation } from "@/lib/db/queries";
 import { db, eq, and } from "@/lib/db";
 import { recommendations } from "@/lib/db/schema";
-import type { TitleType } from "@/types/database";
+import type { TitleType, Platform } from "@/types/database";
+
+type LegacyPlatform = "netflix" | "prime" | "disney" | "hulu" | "hbo" | "apple" | "peacock" | "paramount" | "other";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,11 +14,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, note, platform, watchUrl, tags } = await request.json();
+    const { title, note, platforms, watchUrl, tags } = await request.json();
 
     if (!title?.tmdb_id || !title?.type || !title?.name) {
       return NextResponse.json({ error: "Missing title data" }, { status: 400 });
     }
+
+    const platformsArray: string[] = Array.isArray(platforms) ? platforms : [];
+    // Legacy platform enum values (must match DB enum)
+    const LEGACY_PLATFORMS: LegacyPlatform[] = ["netflix", "prime", "disney", "hulu", "hbo", "apple", "peacock", "paramount", "other"];
+    // Set legacy column to first platform that fits the enum, or null
+    const legacyPlatform = (platformsArray.find((p) => LEGACY_PLATFORMS.includes(p as LegacyPlatform)) as LegacyPlatform) || null;
 
     // Get or create the title
     const dbTitle = await getOrCreateTitle({
@@ -48,7 +56,8 @@ export async function POST(request: NextRequest) {
         .set({
           note: note || null,
           tags: tags || [],
-          platform: platform || null,
+          platform: legacyPlatform,
+          platforms: platformsArray,
           watchUrl: watchUrl || null,
         })
         .where(eq(recommendations.id, existingRec[0].id))
@@ -63,7 +72,8 @@ export async function POST(request: NextRequest) {
       titleId: dbTitle.id,
       note: note || null,
       tags: tags || [],
-      platform: platform || null,
+      platform: legacyPlatform,
+      platforms: platformsArray,
       watchUrl: watchUrl || null,
     });
 

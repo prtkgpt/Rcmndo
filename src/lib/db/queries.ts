@@ -373,6 +373,11 @@ export async function getFeedItems(userId: string, friendIds: string[]): Promise
     const titleStatus = userWatchStatuses.find((ws) => ws.titleId === rec.titleId);
     const userReaction = recReactionsList.find((r) => r.userId === userId);
 
+    // Use platforms array if present, fall back to legacy single platform
+    const recPlatforms = (rec.platforms && rec.platforms.length > 0)
+      ? rec.platforms
+      : (rec.platform ? [rec.platform] : []);
+
     return {
       id: rec.id,
       titleId: rec.titleId,
@@ -385,6 +390,7 @@ export async function getFeedItems(userId: string, friendIds: string[]): Promise
       username: recUser?.username || "",
       note: rec.note,
       platform: rec.platform as Platform | null,
+      platforms: recPlatforms,
       tags: rec.tags || [],
       createdAt: rec.createdAt.toISOString(),
       reactionCount: recReactionsList.length,
@@ -623,8 +629,16 @@ export async function getTitlePageData(titleId: string, userId: string, friendId
     ? await db.select().from(users).where(inArray(users.id, commentUserIds))
     : [];
 
-  // Build platforms list
-  const platforms = [...new Set(recs.map((r) => r.platform).filter(Boolean) as string[])];
+  // Build platforms list (merge all platforms arrays + legacy platform field)
+  const platformsSet = new Set<string>();
+  recs.forEach((r) => {
+    if (r.platforms && r.platforms.length > 0) {
+      r.platforms.forEach((p) => platformsSet.add(p));
+    } else if (r.platform) {
+      platformsSet.add(r.platform);
+    }
+  });
+  const platforms = [...platformsSet];
 
   // Transform recommendations
   const transformedRecs = recs.map((rec) => {
@@ -633,12 +647,17 @@ export async function getTitlePageData(titleId: string, userId: string, friendId
     const recCommentsList = recComments.filter((c) => c.recommendationId === rec.id);
     const userHasLiked = recReactionsList.some((r) => r.userId === userId);
 
+    const recPlatforms = (rec.platforms && rec.platforms.length > 0)
+      ? rec.platforms
+      : (rec.platform ? [rec.platform] : []);
+
     return {
       id: rec.id,
       userId: rec.userId,
       note: rec.note,
       tags: rec.tags || [],
       platform: rec.platform,
+      platforms: recPlatforms,
       watchUrl: rec.watchUrl,
       createdAt: rec.createdAt.toISOString(),
       user: recUser ? {
@@ -690,26 +709,26 @@ export async function getAllWatchStatusesWithTitles(userId: string) {
     db.select({
       titleId: recommendations.titleId,
       platform: recommendations.platform,
+      platforms: recommendations.platforms,
     })
       .from(recommendations)
-      .where(
-        and(
-          inArray(recommendations.titleId, titleIds),
-          sql`${recommendations.platform} IS NOT NULL`
-        )
-      ),
+      .where(inArray(recommendations.titleId, titleIds)),
   ]);
 
-  // Build platform map
+  // Build platform map (merge platforms arrays + legacy platform field)
   const platformMap: Record<string, string[]> = {};
   recsList.forEach((rec) => {
-    if (rec.platform) {
-      if (!platformMap[rec.titleId]) {
-        platformMap[rec.titleId] = [];
-      }
-      if (!platformMap[rec.titleId].includes(rec.platform)) {
-        platformMap[rec.titleId].push(rec.platform);
-      }
+    if (!platformMap[rec.titleId]) {
+      platformMap[rec.titleId] = [];
+    }
+    if (rec.platforms && rec.platforms.length > 0) {
+      rec.platforms.forEach((p) => {
+        if (p && !platformMap[rec.titleId].includes(p)) {
+          platformMap[rec.titleId].push(p);
+        }
+      });
+    } else if (rec.platform && !platformMap[rec.titleId].includes(rec.platform)) {
+      platformMap[rec.titleId].push(rec.platform);
     }
   });
 

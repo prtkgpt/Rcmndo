@@ -52,6 +52,31 @@ const platformConfig: Record<
     color: "text-blue-600",
     bgColor: "bg-blue-600/10",
   },
+  crunchyroll: {
+    label: "Crunchyroll",
+    color: "text-orange-500",
+    bgColor: "bg-orange-500/10",
+  },
+  starz: {
+    label: "Starz",
+    color: "text-gray-800",
+    bgColor: "bg-gray-200",
+  },
+  tubi: {
+    label: "Tubi",
+    color: "text-orange-600",
+    bgColor: "bg-orange-600/10",
+  },
+  youtube: {
+    label: "YouTube",
+    color: "text-red-600",
+    bgColor: "bg-red-600/10",
+  },
+  mubi: {
+    label: "MUBI",
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-500/10",
+  },
   other: {
     label: "Other",
     color: "text-muted",
