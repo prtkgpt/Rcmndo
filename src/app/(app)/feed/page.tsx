@@ -1,10 +1,12 @@
 import { getCurrentUser } from "@/lib/auth";
 import { getFriendIds, getFeedItems } from "@/lib/db/queries";
+import { ensureSchema } from "@/lib/db";
 import { FeedContent } from "./feed-content";
 
 export const dynamic = "force-dynamic";
 
 export default async function FeedPage() {
+  await ensureSchema();
   const user = await getCurrentUser();
 
   if (!user) {

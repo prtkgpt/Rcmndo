@@ -1,11 +1,13 @@
 import { getCurrentUser } from "@/lib/auth";
 import { getAllWatchStatusesWithTitles } from "@/lib/db/queries";
+import { ensureSchema } from "@/lib/db";
 import { WatchlistContent } from "./watchlist-content";
 import type { WatchStatusType } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
 export default async function WatchlistPage() {
+  await ensureSchema();
   const user = await getCurrentUser();
 
   if (!user) {

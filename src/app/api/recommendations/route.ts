@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getOrCreateTitle, createRecommendation } from "@/lib/db/queries";
-import { db, eq, and } from "@/lib/db";
+import { db, eq, and, ensureSchema } from "@/lib/db";
 import { recommendations } from "@/lib/db/schema";
 import type { TitleType, Platform } from "@/types/database";
 
@@ -9,6 +9,7 @@ type LegacyPlatform = "netflix" | "prime" | "disney" | "hulu" | "hbo" | "apple" 
 
 export async function POST(request: NextRequest) {
   try {
+    await ensureSchema();
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

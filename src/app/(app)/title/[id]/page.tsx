@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/auth";
 import { getTitleById, getFriendIds, getTitlePageData, getWatchStatus } from "@/lib/db/queries";
+import { ensureSchema } from "@/lib/db";
 import { TitleContent } from "./title-content";
 import { notFound } from "next/navigation";
 import type { Platform, WatchStatusType } from "@/types/database";
@@ -11,6 +12,7 @@ interface TitlePageProps {
 }
 
 export default async function TitlePage({ params }: TitlePageProps) {
+  await ensureSchema();
   const { id } = await params;
 
   const user = await getCurrentUser();

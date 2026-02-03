@@ -1,11 +1,13 @@
 import { getCurrentUser } from "@/lib/auth";
 import { getUserById, getUserRecommendations, getUserStats } from "@/lib/db/queries";
+import { ensureSchema } from "@/lib/db";
 import { ProfileContent } from "./profile-content";
 import type { Platform, TitleType } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
+  await ensureSchema();
   const user = await getCurrentUser();
 
   if (!user) {
