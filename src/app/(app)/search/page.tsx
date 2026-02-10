@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchIcon, FilmIcon, TvIcon, StarIcon } from "@/components/ui/icons";
@@ -71,100 +69,130 @@ export default function SearchPage() {
   };
 
   return (
-    <div>
-      <Header title="Search" />
+    <div className="min-h-screen bg-gray-50/50">
+      {/* Search header */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100">
+        <div className="px-4 py-4">
+          <h1 className="text-xl font-bold text-gray-900 mb-4">Discover</h1>
 
-      <div className="px-4 py-4">
-        {/* Search input */}
-        <div className="relative mb-4">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
-          <input
-            type="text"
-            placeholder="Search movies & TV shows..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-xl text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            autoFocus
-          />
+          {/* Search input */}
+          <div className="relative mb-4">
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search movies & TV shows..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3.5 bg-gray-100 border-0 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all"
+              autoFocus
+            />
+          </div>
+
+          {/* Filter tabs */}
+          <div className="flex gap-2">
+            {(["all", "movie", "tv"] as FilterType[]).map((type) => (
+              <button
+                key={type}
+                onClick={() => setFilter(type)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all btn-press ${
+                  filter === type
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {type === "all" ? "All" : type === "movie" ? "Movies" : "TV Shows"}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide pb-1">
-          {(["all", "movie", "tv"] as FilterType[]).map((type) => (
-            <button
-              key={type}
-              onClick={() => setFilter(type)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                filter === type
-                  ? "bg-primary text-white"
-                  : "bg-secondary text-muted hover:text-foreground"
-              }`}
-            >
-              {type === "all" ? "All" : type === "movie" ? "Movies" : "TV Shows"}
-            </button>
-          ))}
-        </div>
-
-        {/* Results */}
+      {/* Results */}
+      <div className="px-4 py-6">
         {loading ? (
           <div className="flex justify-center py-12">
             <Spinner />
           </div>
         ) : results.length > 0 ? (
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {results.map((title) => (
-              <Link key={`${title.tmdb_id}-${title.type}`} href={getTitleLink(title)}>
-                <Card variant="interactive" className="flex gap-3 p-3">
-                  <div className="relative w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-secondary">
-                    {title.poster_url ? (
-                      <Image
-                        src={title.poster_url}
-                        alt={title.name}
-                        fill
-                        className="object-cover"
-                        sizes="64px"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted">
-                        {title.type === "movie" ? (
-                          <FilmIcon className="w-6 h-6" />
-                        ) : (
-                          <TvIcon className="w-6 h-6" />
-                        )}
-                      </div>
-                    )}
+              <Link
+                key={`${title.tmdb_id}-${title.type}`}
+                href={getTitleLink(title)}
+                className="group"
+              >
+                <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-200 shadow-sm group-hover:shadow-lg transition-all duration-200">
+                  {title.poster_url ? (
+                    <Image
+                      src={title.poster_url}
+                      alt={title.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+                      {title.type === "movie" ? (
+                        <FilmIcon className="w-12 h-12 text-gray-300" />
+                      ) : (
+                        <TvIcon className="w-12 h-12 text-gray-300" />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  {/* Rating badge */}
+                  {title.vote_average != null && title.vote_average > 0 && (
+                    <div className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 rating-badge rounded-md text-xs">
+                      <StarIcon className="w-3 h-3" />
+                      <span>{title.vote_average.toFixed(1)}</span>
+                    </div>
+                  )}
+
+                  {/* Type badge */}
+                  <div className="absolute top-2 right-2">
+                    <span className="inline-flex px-2 py-1 text-[10px] font-semibold uppercase tracking-wide bg-black/60 text-white rounded-md backdrop-blur-sm">
+                      {title.type === "movie" ? "Film" : "Series"}
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0 py-1">
-                    <h3 className="font-medium line-clamp-2">{title.name}</h3>
-                    <p className="text-sm text-muted mt-1">
-                      {title.year && `${title.year} · `}
-                      {title.type === "movie" ? "Movie" : "TV Show"}
-                    </p>
-                    {title.vote_average != null && title.vote_average > 0 && (
-                      <div className="flex items-center gap-1 mt-1.5">
-                        <StarIcon className="w-3.5 h-3.5 text-amber-500" />
-                        <span className="text-xs font-medium text-amber-700">
-                          {title.vote_average.toFixed(1)}
-                        </span>
-                      </div>
-                    )}
+
+                  {/* Hover info */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform">
+                    <p className="text-white text-sm font-medium line-clamp-2">{title.name}</p>
+                    <p className="text-white/70 text-xs mt-1">{title.year || "—"}</p>
                   </div>
-                </Card>
+                </div>
+
+                {/* Title info below poster */}
+                <div className="mt-2 px-1">
+                  <h3 className="font-semibold text-sm text-gray-900 line-clamp-1 group-hover:text-primary transition-colors">
+                    {title.name}
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {title.year || "—"} · {title.type === "movie" ? "Movie" : "TV"}
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
         ) : query ? (
-          <EmptyState
-            icon={<SearchIcon className="w-8 h-8" />}
-            title="No results found"
-            description="Try searching with different keywords"
-          />
+          <div className="pt-12">
+            <EmptyState
+              icon={<SearchIcon className="w-10 h-10" />}
+              title="No results found"
+              description="Try searching with different keywords"
+            />
+          </div>
         ) : (
-          <EmptyState
-            icon={<SearchIcon className="w-8 h-8" />}
-            title="Search for movies & shows"
-            description="Find something to recommend to your friends"
-          />
+          <div className="pt-12">
+            <EmptyState
+              icon={<SearchIcon className="w-10 h-10" />}
+              title="Search for movies & shows"
+              description="Find something to recommend to your friends"
+            />
+          </div>
         )}
       </div>
     </div>

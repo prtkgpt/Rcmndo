@@ -3,14 +3,13 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import { Header } from "@/components/layout/header";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
 import { Spinner, LoadingScreen } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SearchIcon, FilmIcon, TvIcon, StarIcon } from "@/components/ui/icons";
+import { SearchIcon, FilmIcon, TvIcon, StarIcon, ChevronLeftIcon, CheckIcon } from "@/components/ui/icons";
 import { PLATFORM_OPTIONS } from "@/components/ui/platform-badge";
 import type { NormalizedTitle } from "@/lib/tmdb";
 
@@ -152,24 +151,41 @@ function RecommendPageContent() {
   }
 
   return (
-    <div>
-      <Header
-        title={step === "search" ? "Add Recommendation" : "Recommend"}
-        backHref={step === "form" ? undefined : "/feed"}
-      />
+    <div className="min-h-screen bg-gray-50/50">
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-100">
+        <div className="flex items-center gap-3 px-4 py-4">
+          <Link
+            href={step === "form" && !tmdbId ? "#" : "/feed"}
+            onClick={(e) => {
+              if (step === "form" && !tmdbId) {
+                e.preventDefault();
+                setSelectedTitle(null);
+                setStep("search");
+              }
+            }}
+            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <ChevronLeftIcon className="w-5 h-5 text-gray-600" />
+          </Link>
+          <h1 className="text-xl font-bold text-gray-900">
+            {step === "search" ? "Add Recommendation" : "Share with Friends"}
+          </h1>
+        </div>
+      </div>
 
-      <div className="px-4 py-4">
+      <div className="px-4 py-6 max-w-xl mx-auto">
         {step === "search" ? (
           <>
             {/* Search input */}
-            <div className="relative mb-4">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+            <div className="relative mb-6">
+              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search for a movie or TV show..."
+                placeholder="Search movies & TV shows..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-xl text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
                 autoFocus
               />
             </div>
@@ -182,13 +198,12 @@ function RecommendPageContent() {
             ) : searchResults.length > 0 ? (
               <div className="space-y-3">
                 {searchResults.map((title) => (
-                  <Card
+                  <button
                     key={`${title.tmdb_id}-${title.type}`}
-                    variant="interactive"
-                    className="flex gap-3 p-3"
                     onClick={() => handleSelectTitle(title)}
+                    className="w-full flex gap-4 p-4 bg-white rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all text-left"
                   >
-                    <div className="relative w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-secondary">
+                    <div className="relative w-16 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
                       {title.poster_url ? (
                         <Image
                           src={title.poster_url}
@@ -198,113 +213,119 @@ function RecommendPageContent() {
                           sizes="64px"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted">
+                        <div className="w-full h-full flex items-center justify-center">
                           {title.type === "movie" ? (
-                            <FilmIcon className="w-6 h-6" />
+                            <FilmIcon className="w-6 h-6 text-gray-300" />
                           ) : (
-                            <TvIcon className="w-6 h-6" />
+                            <TvIcon className="w-6 h-6 text-gray-300" />
                           )}
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0 py-1">
-                      <h3 className="font-medium line-clamp-2">{title.name}</h3>
-                      <p className="text-sm text-muted mt-1">
+                      <h3 className="font-semibold text-gray-900 line-clamp-2">{title.name}</h3>
+                      <p className="text-sm text-gray-500 mt-1">
                         {title.year && `${title.year} · `}
                         {title.type === "movie" ? "Movie" : "TV Show"}
                       </p>
                       {title.vote_average != null && title.vote_average > 0 && (
-                        <div className="flex items-center gap-1 mt-1.5">
-                          <StarIcon className="w-3.5 h-3.5 text-amber-500" />
-                          <span className="text-xs font-medium text-amber-700">
-                            {title.vote_average.toFixed(1)}
-                          </span>
+                        <div className="flex items-center gap-1 mt-2">
+                          <div className="inline-flex items-center gap-1 px-2 py-0.5 rating-badge rounded text-xs">
+                            <StarIcon className="w-3 h-3" />
+                            <span>{title.vote_average.toFixed(1)}</span>
+                          </div>
                         </div>
                       )}
                     </div>
-                  </Card>
+                  </button>
                 ))}
               </div>
             ) : query ? (
               <EmptyState
-                icon={<SearchIcon className="w-8 h-8" />}
+                icon={<SearchIcon className="w-10 h-10" />}
                 title="No results found"
                 description="Try searching with different keywords"
               />
             ) : (
-              <EmptyState
-                icon={<SearchIcon className="w-8 h-8" />}
-                title="Find something to recommend"
-                description="Search for a movie or TV show you want to share with friends"
-              />
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <SearchIcon className="w-10 h-10 text-primary" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Find something great</h2>
+                <p className="text-gray-500">Search for a movie or TV show you want to recommend to friends</p>
+              </div>
             )}
           </>
         ) : selectedTitle ? (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Selected title preview */}
-            <Card className="flex gap-3 p-3">
-              <div className="relative w-16 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-secondary">
+            <div className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <div className="relative w-20 h-30 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
                 {selectedTitle.poster_url ? (
                   <Image
                     src={selectedTitle.poster_url}
                     alt={selectedTitle.name}
                     fill
                     className="object-cover"
-                    sizes="64px"
+                    sizes="80px"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted">
+                  <div className="w-full h-full flex items-center justify-center">
                     {selectedTitle.type === "movie" ? (
-                      <FilmIcon className="w-6 h-6" />
+                      <FilmIcon className="w-8 h-8 text-gray-300" />
                     ) : (
-                      <TvIcon className="w-6 h-6" />
+                      <TvIcon className="w-8 h-8 text-gray-300" />
                     )}
                   </div>
                 )}
               </div>
-              <div className="flex-1 min-w-0 py-1">
-                <h3 className="font-medium line-clamp-2">{selectedTitle.name}</h3>
-                <p className="text-sm text-muted mt-1">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-lg text-gray-900 line-clamp-2">{selectedTitle.name}</h3>
+                <p className="text-sm text-gray-500 mt-1">
                   {selectedTitle.year && `${selectedTitle.year} · `}
                   {selectedTitle.type === "movie" ? "Movie" : "TV Show"}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedTitle(null);
-                    setStep("search");
-                  }}
-                  className="text-sm text-primary mt-2"
-                >
-                  Change
-                </button>
+                {!tmdbId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedTitle(null);
+                      setStep("search");
+                    }}
+                    className="text-sm font-medium text-primary mt-3 hover:underline"
+                  >
+                    Change selection
+                  </button>
+                )}
               </div>
-            </Card>
+            </div>
 
             {/* Note */}
-            <Textarea
-              label="Why do you recommend it? (optional)"
-              placeholder="This show had me hooked from episode 1..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={240}
-              showCount
-              rows={3}
-            />
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+              <Textarea
+                label="Why do you recommend it?"
+                placeholder="This show had me hooked from episode 1..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                maxLength={240}
+                showCount
+                rows={3}
+              />
+            </div>
 
             {/* Platforms */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
                 Where to watch
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {PLATFORM_OPTIONS.map((opt) => (
                   <label
                     key={opt.value}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all btn-press ${
                       selectedPlatforms.includes(opt.value)
-                        ? "border-primary bg-primary/5 text-foreground"
-                        : "border-border bg-secondary/50 text-muted hover:border-gray-400"
+                        ? "bg-primary/10 border-2 border-primary text-gray-900"
+                        : "bg-gray-50 border-2 border-transparent text-gray-600 hover:bg-gray-100"
                     }`}
                   >
                     <input
@@ -320,16 +341,14 @@ function RecommendPageContent() {
                       className="sr-only"
                     />
                     <span
-                      className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${
                         selectedPlatforms.includes(opt.value)
-                          ? "border-primary bg-primary"
-                          : "border-gray-400"
+                          ? "bg-primary text-white"
+                          : "bg-white border-2 border-gray-300"
                       }`}
                     >
                       {selectedPlatforms.includes(opt.value) && (
-                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
+                        <CheckIcon className="w-3 h-3" />
                       )}
                     </span>
                     <span className="text-sm font-medium">{opt.label}</span>
@@ -339,22 +358,24 @@ function RecommendPageContent() {
             </div>
 
             {/* Watch URL */}
-            <Input
-              label="Watch link (optional)"
-              type="url"
-              placeholder="https://netflix.com/title/..."
-              value={watchUrl}
-              onChange={(e) => setWatchUrl(e.target.value)}
-            />
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+              <Input
+                label="Direct link to watch"
+                type="url"
+                placeholder="https://netflix.com/title/..."
+                value={watchUrl}
+                onChange={(e) => setWatchUrl(e.target.value)}
+              />
+            </div>
 
             {/* Tags */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
-                Tags (optional)
+            <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
+                Tags <span className="font-normal text-gray-400">(optional, up to 5)</span>
               </label>
-              <div className="flex gap-2 mb-2">
+              <div className="flex gap-2 mb-3">
                 <Input
-                  placeholder="Add a tag"
+                  placeholder="e.g., thriller, binge-worthy"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -378,13 +399,13 @@ function RecommendPageContent() {
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-2 py-1 text-sm rounded-full bg-secondary"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full bg-gray-100 text-gray-700"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
-                        className="text-muted hover:text-foreground"
+                        className="text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         ×
                       </button>
@@ -394,10 +415,14 @@ function RecommendPageContent() {
               )}
             </div>
 
-            {error && <p className="text-sm text-error">{error}</p>}
+            {error && (
+              <div className="p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium">
+                {error}
+              </div>
+            )}
 
-            <Button type="submit" className="w-full" loading={submitting}>
-              Post Recommendation
+            <Button type="submit" className="w-full" size="lg" loading={submitting}>
+              Share Recommendation
             </Button>
           </form>
         ) : null}
