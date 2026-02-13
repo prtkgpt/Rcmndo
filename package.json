@@ -9,10 +9,17 @@
     "lint": "next lint",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "cap:init": "npx cap add ios",
+    "cap:sync": "npx cap sync ios",
+    "cap:open": "npx cap open ios",
+    "ios": "npm run cap:sync && npm run cap:open"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/ios": "^8.1.0",
     "@neondatabase/serverless": "^1.0.2",
     "drizzle-orm": "^0.45.1",
     "next": "^14.2.21",
@@ -23,12 +30,12 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
-    "dotenv": "^16.4.5",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.10.6",
     "@types/nodemailer": "^7.0.5",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "dotenv": "^16.4.5",
     "drizzle-kit": "^0.31.8",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.21",

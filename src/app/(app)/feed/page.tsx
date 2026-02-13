@@ -1,23 +1,48 @@
-import { getCurrentUser } from "@/lib/auth";
-import { getFriendIds, getFeedItems } from "@/lib/db/queries";
-import { ensureSchema } from "@/lib/db";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FeedContent } from "./feed-content";
+import { LoadingScreen } from "@/components/ui/spinner";
+import { apiFetch } from "@/lib/api-config";
+import type { FeedItem } from "@/types/database";
 
-export const dynamic = "force-dynamic";
+export default function FeedPage() {
+  const router = useRouter();
+  const [feedItems, setFeedItems] = useState<FeedItem[] | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function FeedPage() {
-  await ensureSchema();
-  const user = await getCurrentUser();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Get current user
+        const userRes = await apiFetch("/api/users/me");
+        if (!userRes.ok) {
+          router.push("/login");
+          return;
+        }
+        const userData = await userRes.json();
+        setUserId(userData.id);
 
-  if (!user) {
-    return null;
+        // Get feed
+        const feedRes = await apiFetch("/api/feed");
+        if (feedRes.ok) {
+          const feedData = await feedRes.json();
+          setFeedItems(feedData.items || []);
+        }
+      } catch (error) {
+        console.error("Feed fetch error:", error);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [router]);
+
+  if (loading || feedItems === null || userId === null) {
+    return <LoadingScreen />;
   }
 
-  // Get friend IDs
-  const friendIds = await getFriendIds(user.id);
-
-  // Get feed items from friends
-  const feedItems = await getFeedItems(user.id, friendIds);
-
-  return <FeedContent initialItems={feedItems} userId={user.id} />;
+  return <FeedContent initialItems={feedItems} userId={userId} />;
 }

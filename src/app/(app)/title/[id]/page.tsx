@@ -1,61 +1,115 @@
-import { getCurrentUser } from "@/lib/auth";
-import { getTitleById, getFriendIds, getTitlePageData, getWatchStatus } from "@/lib/db/queries";
-import { ensureSchema } from "@/lib/db";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { TitleContent } from "./title-content";
-import { notFound } from "next/navigation";
-import type { Platform, WatchStatusType } from "@/types/database";
+import { LoadingScreen } from "@/components/ui/spinner";
+import { EmptyState } from "@/components/ui/empty-state";
+import { apiFetch } from "@/lib/api-config";
+import type { Title, Platform, WatchStatusType } from "@/types/database";
 
-export const dynamic = "force-dynamic";
-
-interface TitlePageProps {
-  params: Promise<{ id: string }>;
+interface TitlePageData {
+  title: Title;
+  recommendations: Array<{
+    id: string;
+    userId: string;
+    note: string | null;
+    tags: string[];
+    platform: Platform | null;
+    platforms: string[];
+    watchUrl: string | null;
+    createdAt: string;
+    user: {
+      id: string;
+      name: string;
+      username: string | null;
+      avatar_url: string | null;
+    };
+    reactionCount: number;
+    userHasLiked: boolean;
+    comments: Array<{
+      id: string;
+      content: string;
+      createdAt: string;
+      user: {
+        id: string;
+        name: string;
+        username: string | null;
+        avatar_url: string | null;
+      };
+    }>;
+  }>;
+  platforms: string[];
+  watchStatus: WatchStatusType | null;
+  hasUserRecommended: boolean;
 }
 
-export default async function TitlePage({ params }: TitlePageProps) {
-  await ensureSchema();
-  const { id } = await params;
+export default function TitlePage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params.id as string;
 
-  const user = await getCurrentUser();
+  const [data, setData] = useState<TitlePageData | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!user) {
-    return null;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Get current user
+        const userRes = await apiFetch("/api/users/me");
+        if (!userRes.ok) {
+          router.push("/login");
+          return;
+        }
+        const userData = await userRes.json();
+        setUserId(userData.id);
+
+        // Get title data
+        const res = await apiFetch(`/api/titles/${id}`);
+        if (!res.ok) {
+          setError(true);
+        } else {
+          const titleData = await res.json();
+          setData(titleData);
+        }
+      } catch (err) {
+        console.error("Title fetch error:", err);
+        setError(true);
+      }
+      setLoading(false);
+    };
+
+    if (id) {
+      fetchData();
+    }
+  }, [id, router]);
+
+  if (loading) {
+    return <LoadingScreen />;
   }
 
-  // Get title
-  const title = await getTitleById(id);
-
-  if (!title) {
-    notFound();
+  if (error || !data || !userId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <EmptyState
+          icon={<span className="text-4xl">🎬</span>}
+          title="Title not found"
+          description="This title doesn't exist or you don't have access to it."
+        />
+      </div>
+    );
   }
-
-  // Get friend IDs
-  const friendIds = await getFriendIds(user.id);
-
-  // Get title page data (recommendations, platforms)
-  const { recommendations, platforms, hasUserRecommended } = await getTitlePageData(id, user.id, friendIds);
-
-  // Get user's watch status for this title
-  const watchStatusData = await getWatchStatus(user.id, id);
-
-  // Transform recommendations
-  const transformedRecs = recommendations.map((rec) => ({
-    ...rec,
-    platform: rec.platform as Platform | null,
-    user: rec.user!,
-    comments: rec.comments.map((c) => ({
-      ...c,
-      user: c.user!,
-    })),
-  }));
 
   return (
     <TitleContent
-      title={title}
-      recommendations={transformedRecs}
-      platforms={platforms}
-      watchStatus={(watchStatusData?.status as WatchStatusType) || null}
-      userId={user.id}
-      hasUserRecommended={hasUserRecommended || false}
+      title={data.title}
+      recommendations={data.recommendations}
+      platforms={data.platforms}
+      watchStatus={data.watchStatus}
+      userId={userId}
+      hasUserRecommended={data.hasUserRecommended}
     />
   );
 }

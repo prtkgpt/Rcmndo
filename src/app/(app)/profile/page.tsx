@@ -1,64 +1,70 @@
-import { getCurrentUser } from "@/lib/auth";
-import { getUserById, getUserRecommendations, getUserStats } from "@/lib/db/queries";
-import { ensureSchema } from "@/lib/db";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ProfileContent } from "./profile-content";
-import type { Platform, TitleType } from "@/types/database";
+import { LoadingScreen } from "@/components/ui/spinner";
+import { apiFetch } from "@/lib/api-config";
+import type { User, Platform, TitleType } from "@/types/database";
 
-export const dynamic = "force-dynamic";
+interface ProfileData {
+  user: User;
+  recommendations: {
+    id: string;
+    title: {
+      id: string;
+      name: string;
+      year: number | null;
+      type: TitleType;
+      posterUrl: string | null;
+    };
+  }[];
+  stats: {
+    recommendations: number;
+    friends: number;
+    watched: number;
+  };
+}
 
-export default async function ProfilePage() {
-  await ensureSchema();
-  const user = await getCurrentUser();
+export default function ProfilePage() {
+  const router = useRouter();
+  const [data, setData] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!user) {
-    return null;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await apiFetch("/api/profile");
+        if (!res.ok) {
+          router.push("/login");
+          return;
+        }
+        const profileData = await res.json();
+        setData(profileData);
+      } catch (error) {
+        console.error("Profile fetch error:", error);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [router]);
+
+  if (loading || !data) {
+    return <LoadingScreen />;
   }
-
-  // Get user profile
-  const profile = await getUserById(user.id);
-
-  if (!profile) {
-    return null;
-  }
-
-  // Get user's recommendations with titles
-  const recommendationsData = await getUserRecommendations(user.id);
-
-  // Get stats
-  const stats = await getUserStats(user.id);
-
-  // Transform recommendations to match expected type
-  const transformedRecs = recommendationsData.map((rec) => ({
-    id: rec.id,
-    note: rec.note,
-    platform: rec.platform as Platform | null,
-    createdAt: rec.createdAt.toISOString(),
-    title: rec.title ? {
-      id: rec.title.id,
-      name: rec.title.name,
-      year: rec.title.year,
-      type: rec.title.type as TitleType,
-      posterUrl: rec.title.posterUrl,
-    } : null,
-  })).filter((rec) => rec.title !== null);
 
   return (
     <ProfileContent
-      profile={profile}
-      recommendations={transformedRecs as Array<{
-        id: string;
-        note: string | null;
-        platform: Platform | null;
-        createdAt: string;
-        title: {
-          id: string;
-          name: string;
-          year: number | null;
-          type: TitleType;
-          posterUrl: string | null;
-        };
-      }>}
-      stats={stats}
+      profile={data.user}
+      recommendations={data.recommendations.map((rec) => ({
+        id: rec.id,
+        note: null,
+        platform: null as Platform | null,
+        createdAt: new Date().toISOString(),
+        title: rec.title,
+      }))}
+      stats={data.stats}
     />
   );
 }

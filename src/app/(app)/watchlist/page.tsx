@@ -1,29 +1,63 @@
-import { getCurrentUser } from "@/lib/auth";
-import { getAllWatchStatusesWithTitles } from "@/lib/db/queries";
-import { ensureSchema } from "@/lib/db";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { WatchlistContent } from "./watchlist-content";
-import type { WatchStatusType } from "@/types/database";
+import { LoadingScreen } from "@/components/ui/spinner";
+import { apiFetch } from "@/lib/api-config";
+import type { WatchStatusType, TitleType } from "@/types/database";
 
-export const dynamic = "force-dynamic";
+interface WatchlistItem {
+  id: string;
+  status: WatchStatusType;
+  createdAt: string;
+  title: {
+    id: string;
+    tmdb_id: number;
+    type: TitleType;
+    name: string;
+    year: number | null;
+    poster_url: string | null;
+  };
+  platforms: string[];
+}
 
-export default async function WatchlistPage() {
-  await ensureSchema();
-  const user = await getCurrentUser();
+export default function WatchlistPage() {
+  const router = useRouter();
+  const [items, setItems] = useState<WatchlistItem[] | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!user) {
-    return null;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Get current user
+        const userRes = await apiFetch("/api/users/me");
+        if (!userRes.ok) {
+          router.push("/login");
+          return;
+        }
+        const userData = await userRes.json();
+        setUserId(userData.id);
+
+        // Get watchlist
+        const res = await apiFetch("/api/watchlist");
+        if (res.ok) {
+          const data = await res.json();
+          setItems(data.items || []);
+        }
+      } catch (error) {
+        console.error("Watchlist fetch error:", error);
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [router]);
+
+  if (loading || items === null || userId === null) {
+    return <LoadingScreen />;
   }
 
-  // Get user's watch statuses with title info
-  const watchData = await getAllWatchStatusesWithTitles(user.id);
-
-  const items = watchData.map((ws) => ({
-    id: ws.id,
-    status: ws.status as WatchStatusType,
-    createdAt: ws.createdAt,
-    title: ws.title!,
-    platforms: ws.platforms,
-  }));
-
-  return <WatchlistContent initialItems={items} userId={user.id} />;
+  return <WatchlistContent initialItems={items} userId={userId} />;
 }
